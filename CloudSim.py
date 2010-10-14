@@ -133,65 +133,6 @@ def parse_args(scenario):
         if len(task_classes) > 0:
             scenario.task_distribution = task_classes
 
-def makeGraphs(scenario):
-    plt=SimPlot()
-#    plt.plotHistogram(scenario.monitors['N'].histogram(low=0.0, high=100, nbins=30), xlab="tempo", ylab="tasks no sistema")
-#
-#    plt.root.title("Tasks arrived and tasks finished")
-#    lineA=plt.makeLine(scenario.monitors['A'],color='blue')
-#    lineC=plt.makeLine(scenario.monitors['C'],color='red')
-    #lineN=plt.makeLine(scenario.monitors['N'],color='green')
-#    obj=plt.makeGraphObjects([lineA, lineC])
-#    frame=Frame(plt.root)
-#    graph=plt.makeGraphBase(frame,1024,768,title="Chegadas[azul], Saidas[vermelho], Fregueses no sistema[verde]")
-#    graph.pack()
-#    graph.draw(obj)
-#    frame.pack()
-    
-    plt.root.title("Tasks in the system")
-    lineN=plt.makeLine(scenario.machineList[0].monitors['N'],color='red')
-    obj=plt.makeGraphObjects([lineN])
-    frame=Frame(plt.root)
-    graph=plt.makeGraphBase(frame,1024,768,title="Tasks in the system")
-    graph.pack()
-    graph.draw(obj)
-    frame.pack()
-    
-    #graph.postscr() 
-
-    plt.mainloop()
-    
-def operationalValidation(scenario, verbose):
-    T=now()
-    global total_leaving_tasks
-    
-    if verbose:
-        print "***Operational Validation***"
-        for mac in scenario.machineList:
-            print '***', mac.name, '***'
-            print 'current tasks =', len(mac.waitQ) + len(mac.activeQ)
-            print 'Ai =', mac.A
-            print 'Bi =', mac.monitors['B'].total()
-            print 'Ci =', mac.C
-            print 'Ui =', mac.monitors['B'].total()/float(T)
-            print 'Xi =', mac.C/float(T)
-            print 'Si =', mac.monitors['B'].total()/mac.C
-            print 'lambda-i =', mac.A/float(T)
-            print 'Vi =', mac.C/scenario.total_leaving_tasks
-            print 'N =', mac.monitors['N'].timeAverage()
-            print 'T =', mac.monitors['T'].mean()
-        
-        print '***System as a whole***'
-        print 't =', T
-        print 'Ao = ', scenario.scheduler.A
-        print 'lambda = ', float(scenario.scheduler.A)/T
-        print 'Co = ', scenario.total_leaving_tasks
-        print 'Xo = ', float(scenario.total_leaving_tasks)/T
-        print 'N =', scenario.monitors['N'].timeAverage()
-        print 'T =', scenario.monitors['T'].mean()
-    
-    #TODO calcular o num. tasks no sistema
-
 def run(scenario, verbose=True):
     scenario.init_objects()
     initialize()
@@ -207,8 +148,6 @@ def run(scenario, verbose=True):
         print "task class seed: ", scenario.task_class_selector_seed
         print "task duration seed: ", scenario.task_duration_seed
     
-    #makeGraphs(scenario)
-    operationalValidation(scenario, verbose)
     return scenario, now()
 
 def main():
