@@ -2,6 +2,9 @@ import sys
 from SimPy.Simulation import *
 from SimPy.SimPlot import *
 import random
+from GlobalVars import *
+from Scenario import CloudSimScenario
+
 
 def change_total_tasks(scenario, value):
     scenario.total_tasks += value
@@ -155,121 +158,7 @@ class TaskGenerator(Process):
 
 currentMachine=0
 
-# SCHEDULING ALGORITHMS DEFINITION BEGIN #
 
-def weighted_random_schedule(machineList, scenario):
-    total = 0
-    for m in machineList:
-        total += m.factor
-    value = random.uniform(0, total)
-    total = 0
-    for m in machineList:
-        total += m.factor
-        if value < total:
-            return m
-    return machineList[len(machineList)-1]
-
-def random_schedule(machineList, scenario):
-    return machineList[random.randint(0,len(machineList)-1)]
-
-def least_full(machineList, scenario):
-    lower=-1
-    lowerMachines=[]
-
-    for machine in machineList:
-        queue_size=machine.get_queue_size()
-        if(queue_size < lower or lower == -1):
-            lower=queue_size
-            lowerMachine=[machine]
-        elif (queue_size == lower):
-            lowerMachine.append(machine)
-
-    if(len(lowerMachine) > 0):
-        return lowerMachine[random.randint(0, len(lowerMachine)-1)]
-    
-    return machineList[0]
-
-def round_robin(machineList, scenario):
-    global currentMachine
-    machineToReturn=machineList[currentMachine]
-    currentMachine=(currentMachine+1)%len(machineList)
-    return machineToReturn
-
-def fill_queue(machineList, scenario):
-    global currentMachine
-    if(not machineList[currentMachine].can_enqueue_an_element()):
-        nextMachine=(currentMachine+1)%len(machineList)
-        while nextMachine != currentMachine and not machineList[nextMachine].can_enqueue_an_element():
-           nextMachine=(nextMachine+1)%len(machineList)
-        currentMachine=nextMachine
-    return machineList[currentMachine]
-
-# SCHEDULING ALGORITHMS DEFINITION END #
-
-#CONSTANTS
-SCHEDULER_MAX_QUEUE_SIZE=5000000
-MACHINE_MAX_QUEUE_SIZE=100000
-GRID_SIZE=10
-SCHEDULER_HOLD_TIME=0.000001
-
-#TASK CONSTANTS
-SIMPLE_TASK_TIME=1.0
-NORMAL_TASK_TIME=50.0
-COMPLEX_TASK_TIME=150.0
-
-SIMPLE_TASK_PROB=0.33
-NORMAL_TASK_PROB=0.33
-COMPLEX_TASK_PROB=0.34
-
-DEFAULT_SCHEDULING_ALG = weighted_random_schedule
-
-DEFAULT_SIMULATION_TIME = 10000
-
-class GridSimScenario:
-    def __init__(self):
-        
-        # Parameters
-        self.grid_description = [(GRID_SIZE, 1)] # All machines have the same performance
-        self.schedule_algorithm = DEFAULT_SCHEDULING_ALG
-        self.task_distribution = [("simple", SIMPLE_TASK_PROB, SIMPLE_TASK_TIME),
-                                     ("normal", NORMAL_TASK_PROB, NORMAL_TASK_TIME),
-                                     ("complex", COMPLEX_TASK_PROB, COMPLEX_TASK_TIME)]
-        self.task_distribution = [("simple", SIMPLE_TASK_PROB, SIMPLE_TASK_TIME)]
-        self.scheduler_queue_size = SCHEDULER_MAX_QUEUE_SIZE
-        self.machine_queue_size = MACHINE_MAX_QUEUE_SIZE
-        self.task_class_selector_seed = random.randint(11, 9999)
-        self.task_duration_seed = random.randint(11, 9999)
-        self.task_arrival_seed = random.randint(11, 9999)
-        self.task_arrival_mean = 10.0
-        self.scheduler_hold_time = SCHEDULER_HOLD_TIME
-        self.sim_time = DEFAULT_SIMULATION_TIME
-        
-        self.total_tasks = 0
-        self.total_arriving_tasks = 0
-        self.total_leaving_tasks = 0
-        self.total_task_drops = 0
-        
-        self.initiated = False
-        self.monitors = {}
-        
-    def init_objects(self):
-        if self.initiated:
-            raise Exception("Objects already initiated")
-        else:
-            self.initiated = True
-        #objects
-        self.scheduler = Scheduler(queue_max_size=self.scheduler_queue_size)
-        self.machineList = []
-        count = 0
-        for m in self.grid_description:
-            for n in range(m[0]):
-                self.machineList.append(GridMachine(count, self.machine_queue_size, m[1]))
-                count += 1
-        
-        # Monitors
-        self.monitors['N'] = Monitor("N") # Number of clients
-        self.monitors['T'] = Monitor("T") # Service time
-        
 arguments = [
              ('--grid-size', 'number of machines in the grid', 'integer', ),
              ('--scheduling-algorithm', 'scheduling algorithm', 'one of random, least_full, round_robin, fill_queue', ),
@@ -464,7 +353,7 @@ def run(scenario, verbose=True):
     return scenario, now()
 
 def main():
-    scenario = GridSimScenario()
+    scenario = CloudSimScenario()
     parse_args(scenario)
     return run(scenario)
     
