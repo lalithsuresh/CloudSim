@@ -45,7 +45,6 @@ class GridMachine(MyResource):
     def __init__(self, number, queue_max_size=10, factor=1):
         MyResource.__init__(self, capacity=1, name="M"+str(number)+':'+str(factor),
                             queue_max=queue_max_size)
-        self.number = number 
         self.factor = factor
     
 class Task(Process):
@@ -60,7 +59,7 @@ class Task(Process):
         entry_time = now()
         if(not self.scenario.scheduler.can_enqueue_an_element()):
             change_total_tasks(self.scenario, -1)
-            self.scenario.drops += 1
+            self.scenario.total_task_drops += 1
             return
         
         #Escalonando tarefa
@@ -87,7 +86,7 @@ class Task(Process):
         choosen_machine.A += 1
         if(not choosen_machine.can_enqueue_an_element()):
             change_total_tasks(self.scenario, -1)
-            self.scenario.drops += 1
+            self.scenario.total_task_drops += 1
             return
         
         #Executando tarefa
@@ -133,16 +132,16 @@ class TaskGenerator(Process):
             
         return self.distribution[-1]
     
-    #def select_task_duration(self, klass):
-    #    return self.random_duration.uniform(klass[2], klass[3])
-    def select_task_duration(self, klass):
-        return self.random_duration.expovariate(klass[2])
+    #def select_task_duration(self, task_class):
+    #    return self.random_duration.uniform(task_class[2], task_class[3])
+    def select_task_duration(self, task_class):
+        return self.random_duration.expovariate(task_class[2])
     
     def get_task(self):
-        klass = self.select_task_class()
-        name = "Task(%s)-%d" % (klass[0], self.n)
+        task_class = self.select_task_class()
+        name = "Task(%s)-%d" % (task_class[0], self.n)
         self.n += 1
-        return Task(name, self.select_task_duration(klass), self.scenario)
+        return Task(name, self.select_task_duration(task_class), self.scenario)
     
     def run(self, finish):
         
@@ -215,24 +214,27 @@ SCHEDULER_HOLD_TIME=0.000001
 
 #TASK CONSTANTS
 SIMPLE_TASK_TIME=1.0
-NORMAL_TASK_TIME=5.0
-COMPLEX_TASK_TIME=15.0
+NORMAL_TASK_TIME=50.0
+COMPLEX_TASK_TIME=150.0
 
-SIMPLE_TASK_PROB=1.0
-NORMAL_TASK_PROB=0
-COMPLEX_TASK_PROB=0
+SIMPLE_TASK_PROB=0.33
+NORMAL_TASK_PROB=0.33
+COMPLEX_TASK_PROB=0.34
 
 DEFAULT_SCHEDULING_ALG = weighted_random_schedule
+
+DEFAULT_SIMULATION_TIME = 10000
 
 class GridSimScenario:
     def __init__(self):
         
-        #parameters
-        self.grid_description = [(GRID_SIZE, 1)]
+        # Parameters
+        self.grid_description = [(GRID_SIZE, 1)] # All machines have the same performance
         self.schedule_algorithm = DEFAULT_SCHEDULING_ALG
         self.task_distribution = [("simple", SIMPLE_TASK_PROB, SIMPLE_TASK_TIME),
                                      ("normal", NORMAL_TASK_PROB, NORMAL_TASK_TIME),
                                      ("complex", COMPLEX_TASK_PROB, COMPLEX_TASK_TIME)]
+        self.task_distribution = [("simple", SIMPLE_TASK_PROB, SIMPLE_TASK_TIME)]
         self.scheduler_queue_size = SCHEDULER_MAX_QUEUE_SIZE
         self.machine_queue_size = MACHINE_MAX_QUEUE_SIZE
         self.task_class_selector_seed = random.randint(11, 9999)
@@ -240,12 +242,12 @@ class GridSimScenario:
         self.task_arrival_seed = random.randint(11, 9999)
         self.task_arrival_mean = 10.0
         self.scheduler_hold_time = SCHEDULER_HOLD_TIME
-        self.sim_time = 10000
+        self.sim_time = DEFAULT_SIMULATION_TIME
         
         self.total_tasks = 0
         self.total_arriving_tasks = 0
         self.total_leaving_tasks = 0
-        self.drops = 0
+        self.total_task_drops = 0
         
         self.initiated = False
         self.monitors = {}
@@ -264,9 +266,9 @@ class GridSimScenario:
                 self.machineList.append(GridMachine(count, self.machine_queue_size, m[1]))
                 count += 1
         
-        #monitors
-        self.monitors['N'] = Monitor("N") # fregueses no sistema
-        self.monitors['T'] = Monitor("T") # tempo de atendimento
+        # Monitors
+        self.monitors['N'] = Monitor("N") # Number of clients
+        self.monitors['T'] = Monitor("T") # Service time
         
 arguments = [
              ('--grid-size', 'number of machines in the grid', 'integer', ),
@@ -306,7 +308,7 @@ def parse_args(scenario):
         print usage()
         sys.exit()
     
-    klasses = []
+    task_classes = []
     index = 0
     while index < len(args):
         if args[index] == '--grid-size':
@@ -374,14 +376,14 @@ def parse_args(scenario):
             prob = float(args[index+2])
             mintime = int(args[index+3])
             maxtime = int(args[index+4])
-            klasses.append((name, prob, mintime, maxtime))
+            task_classes.append((name, prob, mintime, maxtime))
             index+=5
 
         else:
             raise Exception, 'Unknown option:' + str(args[index])
         
-        if len(klasses) > 0:
-            scenario.task_distribution = klasses
+        if len(task_classes) > 0:
+            scenario.task_distribution = task_classes
 
 def makeGraphs(scenario):
     plt=SimPlot()
