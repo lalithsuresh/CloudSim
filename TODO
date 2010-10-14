@@ -1,0 +1,20 @@
+- Change the task representation to a task-job representation.
+  - Remove scheduling and processing code from the Task!!!
+
+- Worker node stuff:
+	- Change the working unit from time-to-execute-task to number-of-instructions-per-job.
+	- Add memory thingy to nodes.
+	- Round robin CPU scheduler for the nodes.
+	- Swap in-out of jobs on the nodes. This has a cost of instructions per MB attached to it.
+	- Ultimately, a worker node has (instructions/sec, memory, swap-cost, startup-time, scheduler notification time, cost per hour). All configurable.
+
+- Make scheduler have CPU cycles for performing scheduling. Does it have memory as well? :|
+
+- Add cost factor to the workers.
+
+
+- Doubts to ask:
+		- Single task versus Web request? :|
+		- Maximum number of worker nodes? Is it:
+					a) We can launch as many nodes as we have processes?
+		- Perfect scheduling? What does the last line in 2.2 mean?	
