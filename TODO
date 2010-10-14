@@ -1,6 +1,9 @@
 - Change the task representation to a task-job representation.
   - Remove scheduling and processing code from the Task!!!
 
+- Scheduler:
+  - Add CPU time yield.
+
 - Worker node stuff:
 	- Change the working unit from time-to-execute-task to number-of-instructions-per-job.
 	- Add memory thingy to nodes.
