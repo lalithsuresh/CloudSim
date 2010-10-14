@@ -14,7 +14,7 @@ from SchedulingAlgos import *
 from TaskGenerator import *
 from Task import *
 from AbstractResource import *
-from GridMachine import *
+from CloudMachine import *
 
 currentMachine=0
 
