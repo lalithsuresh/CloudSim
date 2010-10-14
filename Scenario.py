@@ -2,7 +2,8 @@ import sys
 from SimPy.Simulation import *
 import random
 from GlobalVars import *
-from cloudsim import Scheduler
+from Scheduler import *
+from GridMachine import *
 
 class CloudSimScenario:
     def __init__(self):
