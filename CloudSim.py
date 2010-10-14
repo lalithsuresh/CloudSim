@@ -1,12 +1,14 @@
+# Python modules
 import sys
+import random
+
+# Simpy modules
 from SimPy.Simulation import *
 from SimPy.SimPlot import *
-import random
+
+# CloudSim modules
 from GlobalVars import *
-from Scenario import CloudSimScenario
-
-
-# Import our modules
+from Scenario import *
 from Scheduler import *
 from SchedulingAlgos import *
 from TaskGenerator import *
