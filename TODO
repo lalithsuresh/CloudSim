@@ -14,9 +14,6 @@
 
 - Implement batch processing for the input
 
-- Scheduler:
-  - scheduler_hold_time will do?
-
 - Worker node stuff:
 	- Change the working unit from time-to-execute-task to number-of-instructions-per-job.
 	- Add memory thingy to nodes.
