@@ -7,22 +7,29 @@ class Scheduler(Process):
         self.scenario = scenario
 
         #XXX: Implement max queue size
-        self.queue = []
+        self.jobqueue = []
         self.running = 0
 
     def enqueue (self, job):
-        self.queue.append (job) 
-        if (len(self.queue) == 1):
+        self.jobqueue.append (job) 
+
+        # Only run the Scheduler thread
+        # if we have jobs to schedule
+        if (len(self.jobqueue) == 1):
             reactivate (self)
 
     def schedule (self):
 
         while (1):
 
-          if (len(self.queue) == 0):
+          # If our job queue is empty,
+          # go into idle state
+          if (len(self.jobqueue) == 0):
               yield passivate, self
 
           yield hold,self,self.scenario.scheduler_hold_time
+
           choosen_machine = self.scenario.schedule_algorithm (self.scenario.machineList, self.scenario)
 
-          activate (choosen_machine, choosen_machine.execute_task (self.queue.pop(0)))
+          # Pass on job to a machine for execution
+          activate (choosen_machine, choosen_machine.execute_task (self.jobqueue.pop(0)))
