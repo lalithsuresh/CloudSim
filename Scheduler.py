@@ -13,13 +13,14 @@ class Scheduler(Process):
 
     def enqueue (self, Task):
         self.queue.append (Task) 
+        if (len(self.queue) == 1):
+            reactivate (self)
 
     def schedule (self):
 
         i = 0
         while (1):
 
-          print "am i working?", len(self.queue)
           if (len(self.queue) == 0):
               yield passivate, self
 
@@ -46,6 +47,5 @@ class Scheduler(Process):
           #    self.scenario.total_task_drops += 1
           #    return 
         
-          # activate (choosen_machine, choosen_machine.execute_task (self.queue.pop(0)))
-#          print "lol", i
-#          i+=1
+          print "Scheduler enqueued someone at:", now()
+          activate (choosen_machine, choosen_machine.execute_task (self.queue.pop(0)))

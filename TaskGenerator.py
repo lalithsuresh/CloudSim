@@ -63,14 +63,7 @@ class TaskGenerator(Process):
 
             for each in jobsToBeQueued:
                 self.scenario.scheduler.enqueue (each)
+                self.numJobs -= 1
 
             yield hold, self, 1
-
-            reactivate (self.scenario.scheduler)
-
-        #while now() < finish:
-        #  yield hold,self,self.random_arrival.expovariate(self.scenario.task_arrival_mean)
-        #  c = self.get_task()
-        #  self.scenario.total_arriving_tasks += 1
-        #  change_total_tasks(self.scenario, 1)
-        # activate (self.scenario.scheduler, self.scenario.scheduler.schedule (c))
+            print "TaskGenerator generated a job at:", now()
