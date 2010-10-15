@@ -1,8 +1,12 @@
 - Change the task representation to a task-job representation.
-  - Remove scheduling and processing code from the Task!!!
+  - Remove scheduling and processing code from the Task!!! (Done)
+
+- Global scenario object?
+
+- Implement batch processing for the input
 
 - Scheduler:
-  - Add CPU time yield.
+  - scheduler_hold_time will do?
 
 - Worker node stuff:
 	- Change the working unit from time-to-execute-task to number-of-instructions-per-job.

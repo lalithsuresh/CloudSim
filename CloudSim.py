@@ -24,11 +24,6 @@ arguments = [
              ('--scheduler-qs', 'scheduler queue size', 'integer', ),
              ('--machine-qs', 'machine queue size', 'integer',  ),
              ('--scheduler-ht', 'scheduler hold time', 'float', ),
-             ('--task-class-seed', 'seed used to do task class selection', 'integer'),
-             ('--task-duration-seed', 'seed used to generate task duration', 'integer'),
-             ('--task-arrival-seed', 'seed used to generate task arrivals', 'integer'),
-             ('--task-arrival-mean', 'Mean task arrival rate', 'float'),
-             ('--task-class', 'defines a task class, 4 values are needed: name probability time', 'string float int')
              ]
 
 algorithms_map = {'random':random_schedule,
@@ -56,7 +51,6 @@ def parse_args(scenario):
         print usage()
         sys.exit()
     
-    task_classes = []
     index = 0
     while index < len(args):
         if args[index] == '--grid-size':
@@ -91,62 +85,25 @@ def parse_args(scenario):
             scenario.scheduler_hold_time = value
             index += 2
 
-        elif args[index] == '--task-class-seed':
-            value = int(args[index+1])
-            if value <= 0:
-                raise Exception, '--task-class-seed must be positive'
-            scenario.task_class_selector_seed = value
-            index += 2
-            
-        elif args[index] == '--task-duration-seed':
-            value = int(args[index+1])
-            if value <= 0:
-                raise Exception, '--task-duration-seed must be positive'
-            scenario.task_duration_seed = value
-            index += 2
-            
-        elif args[index] == '--task-arrival-seed':
-            value = int(args[index+1])
-            if value <= 0:
-                raise Exception, '--task-arrival-seed must be positive'
-            scenario.task_arrival_seed = value
-            index += 2
-            
-        elif args[index] == '--task-arrival-mean':
-            value = float(args[index+1])
-            if value <= 0:
-                raise Exception, '--task-arrival-mean must be positive'
-            scenario.task_arrival_mean = value
-            index += 2
-            
-        elif args[index] == '--task-class':
-            name = args[index+1]
-            prob = float(args[index+2])
-            mintime = int(args[index+3])
-            maxtime = int(args[index+4])
-            task_classes.append((name, prob, mintime, maxtime))
-            index+=5
-
         else:
             raise Exception, 'Unknown option:' + str(args[index])
-        
-        if len(task_classes) > 0:
-            scenario.task_distribution = task_classes
 
 def run(scenario, verbose=True):
     scenario.init_objects()
     initialize()
     
-    taskGenerator = TaskGenerator(scenario)
-    activate(taskGenerator, taskGenerator.run(scenario.sim_time))
+    # XXX: Works only for a single input line.
+    # XXX: Need to implement batch processing.
+    inputFile = open ('input', 'r')
+    params = map (lambda x : x.strip (), inputFile.readlines ())
+    params = map (lambda x : x[:-1], params[0].split ())
+    taskGenerator = TaskGenerator (scenario, params)
+    activate (taskGenerator, taskGenerator.run(scenario.sim_time))
        
     simulate(until=scenario.sim_time)
     
     if verbose:
         print "Total tasks:", scenario.total_arriving_tasks
-        print "task arrival seed: ", scenario.task_arrival_seed
-        print "task class seed: ", scenario.task_class_selector_seed
-        print "task duration seed: ", scenario.task_duration_seed
     
     return scenario, now()
 
@@ -157,4 +114,3 @@ def main():
     
 if __name__ == '__main__':
     main()
-
