@@ -17,4 +17,16 @@ COMPLEX_TASK_PROB=0.34
 
 DEFAULT_SIMULATION_TIME = 10000
 
-DEFAULT_SCHEDULING_ALG = weighted_random_schedule
+DEFAULT_SCHEDULING_ALG = random_schedule
+
+
+NODE_SPEED=1000 # Instructions / Second
+NODE_MEM=1024 # MB
+NODE_SWAP_COST=1 # Instructions / MB
+NODE_STARTUP=2 # Seconds
+NODE_SCH_NOTIFICATION=1 # Seconds
+NODE_COST=0.1 # Euros/Hour
+
+# The period of time for which a process is allowed to run in a preemptive multitasking system is generally called the time slice, or quantum
+
+QUANTUM=1 # Second

@@ -1,16 +1,16 @@
 from SimPy.Simulation import *
 
-def weighted_random_schedule(machineList, scenario):
-    total = 0
-    for m in machineList:
-        total += m.factor
-    value = random.uniform(0, total)
-    total = 0
-    for m in machineList:
-        total += m.factor
-        if value < total:
-            return m
-    return machineList[len(machineList)-1]
+#def weighted_random_schedule(machineList, scenario):
+#    total = 0
+#    for m in machineList:
+#        total += m.factor
+#    value = random.uniform(0, total)
+#    total = 0
+#    for m in machineList:
+#        total += m.factor
+#        if value < total:
+#            return m
+#    return machineList[len(machineList)-1]
 
 def random_schedule(machineList, scenario):
     return machineList[random.randint(0,len(machineList)-1)]

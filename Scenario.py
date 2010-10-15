@@ -38,6 +38,5 @@ class CloudSimScenario:
         count = 0
         for m in self.grid_description:
             for n in range(m[0]):
-                self.machineList.append(CloudMachine(count, self.machine_queue_size, m[1]))
+                self.machineList.append(CloudMachine())
                 count += 1
-

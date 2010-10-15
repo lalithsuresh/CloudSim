@@ -99,6 +99,9 @@ def run(scenario, verbose=True):
     params = map (lambda x : x[:-1], params[0].split ())
     taskGenerator = TaskGenerator (scenario, params)
     activate (taskGenerator, taskGenerator.run(scenario.sim_time))
+
+    for machine in scenario.machineList:
+        activate(machine, machine.start())
        
     simulate(until=scenario.sim_time)
     

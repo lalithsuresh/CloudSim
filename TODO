@@ -1,3 +1,12 @@
+****
+- Add monitors
+- Account costs in cloud machine (when finish job)
+- Notify scheduler when job is finished
+- Create and activate machines in the schedule
+- Add shutdown machine support
+
+***
+
 - Change the task representation to a task-job representation.
   - Remove scheduling and processing code from the Task!!! (Done)
 

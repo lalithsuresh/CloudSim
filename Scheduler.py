@@ -32,4 +32,5 @@ class Scheduler(Process):
           choosen_machine = self.scenario.schedule_algorithm (self.scenario.machineList, self.scenario)
 
           # Pass on job to a machine for execution
-          activate (choosen_machine, choosen_machine.execute_task (self.jobqueue.pop(0)))
+          choosen_machine.addJob(self.jobqueue.pop(0))
+          #activate (choosen_machine, choosen_machine.execute_task (self.jobqueue.pop(0)))
