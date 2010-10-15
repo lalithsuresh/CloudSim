@@ -66,4 +66,3 @@ class TaskGenerator(Process):
                 self.numJobs -= 1
 
             yield hold, self, 1
-            print "TaskGenerator generated a job at:", now()
