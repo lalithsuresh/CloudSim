@@ -4,6 +4,7 @@
 - Notify scheduler when job is finished
 - Create and activate machines in the schedule
 - Add shutdown machine support
+- Add support to partial quantums (when the number of remaining instructions is samller than the number of instructions per quantum)
 
 ***
 
