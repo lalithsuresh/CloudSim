@@ -16,7 +16,8 @@ from Task import *
 from AbstractResource import *
 from CloudMachine import *
 
-currentMachine=0
+currentMachine = 0
+inputFile = ''
 
 arguments = [
              ('--grid-size', 'number of machines in the grid', 'integer', ),
@@ -54,37 +55,40 @@ def parse_args(scenario):
     index = 0
     while index < len(args):
         if args[index] == '--grid-size':
-            value = int(args[index+1])
+            value = int(args[index + 1])
             if value <= 0:
                 raise Exception, '--grid-size must be positive'
-            scenario.grid_description = [(value,1)]
+            scenario.grid_description = [(value, 1)]
             index += 2
         
         elif args[index] == '--scheduling-algorithm':
-            scenario.schedule_algorithm = algorithms_map[args[index+1]]
+            scenario.schedule_algorithm = algorithms_map[args[index + 1]]
             index += 2
             
         elif args[index] == '--scheduler-qs':
-            value = int(args[index+1])
+            value = int(args[index + 1])
             if value <= 0:
                 raise Exception, '--scheduler-qs must be positive'
             scenario.scheduler_queue_size = value
             index += 2
             
         elif args[index] == '--machine-qs':
-            value = int(args[index+1])
+            value = int(args[index + 1])
             if value <= 0:
                 raise Exception, '--machine-qs must be positive'
             scenario.machine_queue_size = value
             index += 2
         
         elif args[index] == '--scheduler-ht':
-            value = float(args[index+1])
+            value = float(args[index + 1])
             if value <= 0:
                 raise Exception, '--scheduler-ht must be positive'
             scenario.scheduler_hold_time = value
             index += 2
-
+        elif args[index] == '--input':
+            global inputFile
+            inputFile = args[index + 1]
+            index += 2
         else:
             raise Exception, 'Unknown option:' + str(args[index])
 
@@ -94,7 +98,8 @@ def run(scenario, verbose=True):
     
     # XXX: Works only for a single input line.
     # XXX: Need to implement batch processing.
-    inputFile = open ('input', 'r')
+    global inputFile
+    inputFile = open (inputFile, 'r')
     temp = map (lambda x : x.strip (), inputFile.readlines ())
     params = []
     for each in temp:

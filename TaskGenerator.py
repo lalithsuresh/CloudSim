@@ -83,3 +83,4 @@ class TaskGenerator(Process):
                     numJobs -= 1
 
                 yield hold, self, 1
+                print now()
