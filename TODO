@@ -8,12 +8,9 @@
 
 ***
 
-- Change the task representation to a task-job representation.
-  - Remove scheduling and processing code from the Task!!! (Done)
+- Web request mode
 
 - Global scenario object?
-
-- Implement batch processing for the input
 
 - Worker node stuff:
 	- Change the working unit from time-to-execute-task to number-of-instructions-per-job.
@@ -21,8 +18,6 @@
 	- Round robin CPU scheduler for the nodes.
 	- Swap in-out of jobs on the nodes. This has a cost of instructions per MB attached to it.
 	- Ultimately, a worker node has (instructions/sec, memory, swap-cost, startup-time, scheduler notification time, cost per hour). All configurable.
-
-- Make scheduler have CPU cycles for performing scheduling. Does it have memory as well? :|
 
 - Add cost factor to the workers.
 
