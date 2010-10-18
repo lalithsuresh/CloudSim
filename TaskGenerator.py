@@ -9,7 +9,8 @@ class TaskGenerator(Process):
         Process.__init__(self)
         self.scenario = scenario
 
-        # Following are input parameters to the task generator
+        # Following are input parameters to the task generator.
+        # Stores a list of input parameter tuples
         self.task_parameters = map(lambda x:tuple(x[0]) + tuple (map(lambda y:int(y), x[1:])), input_parameters)
 
         # XXX: Keep seeds modifiable later on!
@@ -83,4 +84,3 @@ class TaskGenerator(Process):
                     numJobs -= 1
 
                 yield hold, self, 1
-                print now()
