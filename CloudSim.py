@@ -95,8 +95,11 @@ def run(scenario, verbose=True):
     # XXX: Works only for a single input line.
     # XXX: Need to implement batch processing.
     inputFile = open ('input', 'r')
-    params = map (lambda x : x.strip (), inputFile.readlines ())
-    params = map (lambda x : x[:-1], params[0].split ())
+    temp = map (lambda x : x.strip (), inputFile.readlines ())
+    params = []
+    for each in temp:
+      y = each.split()
+      params.append(map(lambda x: x[:-1], y[:-1] + [y[-1]]))
     taskGenerator = TaskGenerator (scenario, params)
     activate (taskGenerator, taskGenerator.run(scenario.sim_time))
 

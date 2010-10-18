@@ -10,15 +10,7 @@ class TaskGenerator(Process):
         self.scenario = scenario
 
         # Following are input parameters to the task generator
-        self.mode = input_parameters[0]
-        self.startingTaskId,\
-        self.numJobs,\
-        self.rateOfJobGeneration,\
-        self.startingJobId,\
-        self.lowInstrBound,\
-        self.highInstrBound,\
-        self.lowMemBound,\
-        self.highMemBound = map (lambda x : int (x), input_parameters[1:])
+        self.task_parameters = map(lambda x:tuple(x[0]) + tuple (map(lambda y:int(y), x[1:])), input_parameters)
 
         # XXX: Keep seeds modifiable later on!
         self.cpuRandomObject = random.Random (1)
@@ -29,40 +21,66 @@ class TaskGenerator(Process):
     
     def generate_tasks (self):
 
-        if (self.mode == 'W'):
-            print "Not developed yet"
-            exit (-1)
-        elif (self.mode == 'S'):
-            # Create a set of jobs for the task
-            joblist = []
+        for each in self.task_parameters:
+
+            mode,\
+            startingTaskId,\
+            numJobs,\
+            rateOfJobGeneration,\
+            startingJobId,\
+            lowInstrBound,\
+            highInstrBound,\
+            lowMemBound,\
+            highMemBound = each
+
+            if (mode == 'W'):
+                print "Not developed yet"
+                exit (-1)
+            elif (mode == 'S'):
+                # Create a set of jobs for the task
+                joblist = []
             
-            for jobId in xrange (self.startingJobId, self.startingJobId + self.numJobs):
-                name = "Job%s-%s" % (jobId, self.startingTaskId)
-                reqInstr = int (self.cpuRandomObject.uniform (self.lowInstrBound, self.highInstrBound))
-                reqMem = int (self.memRandomObject.uniform (self.lowMemBound, self.highMemBound))
-                joblist.append (Job (name, reqInstr, reqMem, self.startingTaskId, jobId, self.scenario))
+                for jobId in xrange (startingJobId, startingJobId + numJobs):
+                    name = "Job%s-%s" % (jobId, startingTaskId)
+                    reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
+                    reqMem = int (self.memRandomObject.uniform (lowMemBound, highMemBound))
+                    joblist.append (Job (name, reqInstr, reqMem, startingTaskId, jobId, self.scenario))
              
-            task = Task ("Task" + str(self.startingTaskId), self.startingTaskId, joblist, self.scenario)
-            self.tasklist.append (task)
+                task = Task ("Task" + str(startingTaskId), startingTaskId, joblist, self.scenario)
+                self.tasklist.append (task)
 
     def run(self, finish):
 
         # Populate the task list
         self.generate_tasks()
-
+        
         activate (self.scenario.scheduler, self.scenario.scheduler.schedule ())
-        while (self.numJobs):
-            jobsToBeQueued = []
-            try:
-                for i in xrange (self.rateOfJobGeneration):
-                    jobsToBeQueued.append (self.tasklist[0].joblist.pop(0))
-            except IndexError:
-                self.tasklist.pop(0)
-                for i in xrange (len(jobsToBeQueued) - self.rateOfJobGeneration):
-                    jobsToBeQueueda.append (self.tasklist[0].joblist.pop(0))
 
-            for each in jobsToBeQueued:
-                self.scenario.scheduler.enqueue (each)
-                self.numJobs -= 1
+        times = len(self.tasklist)
+        for i in xrange(times):
+            mode,\
+            startingTaskId,\
+            numJobs,\
+            rateOfJobGeneration,\
+            startingJobId,\
+            lowInstrBound,\
+            highInstrBound,\
+            lowMemBound,\
+            highMemBound = self.task_parameters[i]
 
-            yield hold, self, 1
+            while (numJobs):
+                jobsToBeQueued = []
+                try:
+                    for i in xrange (rateOfJobGeneration):
+                        jobsToBeQueued.append (self.tasklist[0].joblist.pop(0))
+                except IndexError:
+                    self.tasklist.pop(0)
+                    for i in xrange (len(jobsToBeQueued) - rateOfJobGeneration):
+                        jobsToBeQueued.append (self.tasklist[0].joblist.pop(0))
+
+                for each in jobsToBeQueued:
+                    self.scenario.scheduler.enqueue (each)
+                    numJobs -= 1
+
+                yield hold, self, 1
+                print now()
