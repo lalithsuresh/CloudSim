@@ -40,8 +40,6 @@ class TaskGenerator(Process):
             elif (mode == 'S'):
                 # Create a set of jobs for the task
                 joblist = []
-           
-                print "Low mem " + str(lowMemBound) + ". High mem " + str(highMemBound)
 
                 for jobId in xrange (startingJobId, startingJobId + numJobs):
                     name = "Job%s-%s" % (jobId, startingTaskId)
@@ -86,4 +84,4 @@ class TaskGenerator(Process):
                     numJobs -= 1
 
                 yield hold, self, 1
-                print "Current time: " + str(now())
+                #print "Current time: " + str(now())

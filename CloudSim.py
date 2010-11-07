@@ -71,11 +71,13 @@ def run(scenario, verbose=True):
     # XXX: Need to implement batch processing.
     global inputFile
     inputFile = open (inputFile, 'r')
+    # Remove trailing endline characters
     temp = map (lambda x : x.strip (), inputFile.readlines ())
     params = []
     for each in temp:
       y = each.split()
-      params.append(map(lambda x: x[:-1], y[:-1] + [y[-1]]))
+      # Remove commas from each input except the last
+      params.append(map(lambda x: x[:-1], y[:-1]) + [y[-1]]) 
     taskGenerator = TaskGenerator (scenario, params)
     activate (taskGenerator, taskGenerator.run(scenario.sim_time))
 
