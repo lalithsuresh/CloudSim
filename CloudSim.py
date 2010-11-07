@@ -67,8 +67,6 @@ def run(scenario, verbose=True):
     scenario.init_objects()
     initialize()
     
-    # XXX: Works only for a single input line.
-    # XXX: Need to implement batch processing.
     global inputFile
     inputFile = open (inputFile, 'r')
     # Remove trailing endline characters
@@ -76,10 +74,10 @@ def run(scenario, verbose=True):
     params = []
     for each in temp:
       y = each.split()
-      # Remove commas from each input except the last
-      params.append(map(lambda x: x[:-1], y[:-1]) + [y[-1]]) 
-    taskGenerator = TaskGenerator (scenario, params)
-    activate (taskGenerator, taskGenerator.run(scenario.sim_time))
+      # Remove commas from each input element except the last
+      params = (map(lambda x: x[:-1], y[:-1]) + [y[-1]]) 
+      taskGenerator = TaskGenerator (scenario, [params])  # Generate one TaskGenerator per input line
+      activate (taskGenerator, taskGenerator.run(scenario.sim_time))
 
     #Activate initial machines
     for machine in scenario.machines:
