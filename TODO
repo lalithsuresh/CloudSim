@@ -1,5 +1,7 @@
 New Bug: high memory bound is not being read correctly from input (check output)
 
+*** Need more sanity checks in code. Just to play safe.
+
 ****
 - Add monitors
 - Account costs in cloud machine (when finish job)
@@ -28,4 +30,4 @@ New Bug: high memory bound is not being read correctly from input (check output)
 		- Single task versus Web request? :|
 		- Maximum number of worker nodes? Is it:
 					a) We can launch as many nodes as we have processes?
-		- Perfect scheduling? What does the last line in 2.2 mean?	
+		- Perfect scheduling? What does the last line in 2.2 mean?
