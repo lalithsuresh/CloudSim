@@ -9,3 +9,4 @@ class Job(Process):
         self.jobId = jobId
         self.scenario = scenario
         self.finished = 0
+        self.worker = None

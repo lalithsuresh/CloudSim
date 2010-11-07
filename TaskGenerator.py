@@ -39,7 +39,9 @@ class TaskGenerator(Process):
             elif (mode == 'S'):
                 # Create a set of jobs for the task
                 joblist = []
-            
+           
+                print "Low mem " + str(lowMemBound) + ". High mem " + str(highMemBound)
+
                 for jobId in xrange (startingJobId, startingJobId + numJobs):
                     name = "Job%s-%s" % (jobId, startingTaskId)
                     reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
@@ -53,8 +55,8 @@ class TaskGenerator(Process):
 
         # Populate the task list
         self.generate_tasks()
-        
-        activate (self.scenario.scheduler, self.scenario.scheduler.schedule ())
+       
+        activate (self.scenario.scheduler, self.scenario.scheduler.run())
 
         times = len(self.tasklist)
         for i in xrange(times):
@@ -69,18 +71,18 @@ class TaskGenerator(Process):
             highMemBound = self.task_parameters[i]
 
             while (numJobs):
-                jobsToBeQueued = []
+                jobsToBeAdded = []
                 try:
                     for i in xrange (rateOfJobGeneration):
-                        jobsToBeQueued.append (self.tasklist[0].joblist.pop(0))
+                        jobsToBeAdded.append (self.tasklist[0].joblist.pop(0))
                 except IndexError:
                     self.tasklist.pop(0)
-                    for i in xrange (len(jobsToBeQueued) - rateOfJobGeneration):
-                        jobsToBeQueued.append (self.tasklist[0].joblist.pop(0))
+                    for i in xrange (len(jobsToBeAdded) - rateOfJobGeneration):
+                        jobsToBeAdded.append (self.tasklist[0].joblist.pop(0))
 
-                for each in jobsToBeQueued:
-                    self.scenario.scheduler.enqueue (each)
+                for each in jobsToBeAdded:
+                    self.scenario.scheduler.addJob(each)
                     numJobs -= 1
 
                 yield hold, self, 1
-                print now()
+                print "Current time: " + str(now())
