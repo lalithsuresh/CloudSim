@@ -43,7 +43,7 @@ class TaskGenerator(Process):
                     reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
                     reqMem = int (self.memRandomObject.uniform (lowMemBound, highMemBound))
                     # JobId = 0, TaskId = taskId
-                    jobInTask = Job (name, reqInstr, reqMem, taskId, 0, self.scenario)
+                    jobInTask = Job (name, reqInstr, reqMem, taskId, numJobs, 0, self.scenario)
                     task = Task ("Task" + str(taskId), taskId, [jobInTask], self.scenario)
                     webTaskBucket.append(task)
                 
@@ -57,7 +57,7 @@ class TaskGenerator(Process):
                     name = "Job%s-%s" % (jobId, startingTaskId)
                     reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
                     reqMem = int (self.memRandomObject.uniform (lowMemBound, highMemBound))
-                    joblist.append (Job (name, reqInstr, reqMem, startingTaskId, jobId, self.scenario))
+                    joblist.append (Job (name, reqInstr, reqMem, startingTaskId, numJobs, jobId, self.scenario))
              
                 task = Task ("Task" + str(startingTaskId), startingTaskId, joblist, self.scenario)
                 self.tasklist.append ([task])
