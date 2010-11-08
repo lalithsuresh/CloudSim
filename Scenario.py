@@ -67,3 +67,11 @@ class CloudSimScenario:
         self.machines.append(machine)
         self.genId += 1
         return machine
+
+    def addMonitor (self, name):
+        try: 
+            self.monitors[name]
+            print 'Error: Monitor name "%s" is already being used' % (name)
+            sys.exit (-1)
+        except KeyError:
+            self.monitors[name] = Monitor ()
