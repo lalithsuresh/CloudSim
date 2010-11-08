@@ -49,7 +49,7 @@ class CloudSimScenario:
     def nextProperty(self, file):
         line = file.readline()
         while(line != '' and line.startswith("#")):
-          line = file.readline()
+           line = file.readline()
         return line.strip('\n')
 
     def init_objects(self):
@@ -60,7 +60,7 @@ class CloudSimScenario:
         #objects
         self.scheduler = Scheduler(self)
         for m_id in range(self.initial_machines):
-          self.createMachine(1)
+           self.createMachine(1)
 
     def createMachine(self, started=0):
         machine = CloudMachine(self.genId, self, started)

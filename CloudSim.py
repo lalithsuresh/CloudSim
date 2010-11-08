@@ -73,18 +73,18 @@ def run(scenario, verbose=True):
     temp = map (lambda x : x.strip (), inputFile.readlines ())
     params = []
     for each in temp:
-      y = each.split()
-      # Remove commas from each input element except the last
-      params = (map(lambda x: x[:-1], y[:-1]) + [y[-1]]) 
-      taskGenerator = TaskGenerator (scenario, [params])  # Generate one TaskGenerator per input line
-      activate (taskGenerator, taskGenerator.run(scenario.sim_time))
+        y = each.split()
+        # Remove commas from each input element except the last
+        params = (map(lambda x: x[:-1], y[:-1]) + [y[-1]]) 
+        taskGenerator = TaskGenerator (scenario, [params])  # Generate one TaskGenerator per input line
+        activate (taskGenerator, taskGenerator.run(scenario.sim_time))
 
     #Activate initial machines
     for machine in scenario.machines:
         activate(machine, machine.start())
     
     simulate(until=scenario.sim_time)
-    
+   
     return scenario, now()
 
 def main():
