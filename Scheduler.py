@@ -10,6 +10,7 @@ class Scheduler(Process):
         self.running = 0
 
         scenario.addMonitor ("queueSizeMon")
+        scenario.addVisualisation ("queueSizeMon", self.scenario.monitors ["queueSizeMon"].mean)
 
     def addJob(self, job):
         jobList = self.tasks.get(job.taskId)
@@ -37,4 +38,4 @@ class Scheduler(Process):
                 # start job on machine
                 machine.addJob(machine_job[1])
 
-            yield hold,self,self.scenario.sch_interval
+            yield hold, self, self.scenario.sch_interval

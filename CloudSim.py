@@ -84,6 +84,8 @@ def run(scenario, verbose=True):
         activate(machine, machine.start())
     
     simulate(until=scenario.sim_time)
+
+    scenario.displayVisualisation ()
    
     return scenario, now()
 

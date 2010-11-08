@@ -45,6 +45,7 @@ class CloudSimScenario:
 
         self.initiated = False
         self.monitors = {}
+        self.visualisation = {}
     
     def nextProperty(self, file):
         line = file.readline()
@@ -75,3 +76,21 @@ class CloudSimScenario:
             sys.exit (-1)
         except KeyError:
             self.monitors[name] = Monitor ()
+
+    def addVisualisation (self, name, visualisation):
+        try:
+            self.monitors[name]
+        except KeyError:
+            print "Error: %s isn't a valid monitor name" % (name)
+            sys.exit (-1)
+
+        try:
+            self.visualisation[name]
+            print 'Error: Monitor name "%s" already has a visualiser defined' % (name)
+            sys.exit (-1)
+        except KeyError:
+            self.visualisation[name] = visualisation
+
+    def displayVisualisation (self):
+        for each in self.monitors:
+            print self.visualisation[each]()
