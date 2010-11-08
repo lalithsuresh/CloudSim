@@ -1,5 +1,6 @@
 import sys
 from SimPy.Simulation import *
+from SimPy.SimPlot import *
 import random
 from SchedulingAlgos import *
 from Scheduler import *
@@ -45,8 +46,16 @@ class CloudSimScenario:
 
         self.initiated = False
         self.monitors = {}
-        self.visualisation = {}
-    
+        self.monitorPlots = {}
+        self.monitorFunctions = {}
+
+        temp = self.addMonitor ("totalNodes")
+        self.addMonitorFunction ("totalNodes", temp.mean)
+        self.addMonitorPlot ("totalNodes")
+
+    def plotLine (self,monitor):
+        SimPlot().plotLine (monitor).mainloop()
+
     def nextProperty(self, file):
         line = file.readline()
         while(line != '' and line.startswith("#")):
@@ -67,6 +76,7 @@ class CloudSimScenario:
         machine = CloudMachine(self.genId, self, started)
         self.machines.append(machine)
         self.genId += 1
+        self.monitors ["totalNodes"].observe (self.genId)
         return machine
 
     def addMonitor (self, name):
@@ -77,20 +87,40 @@ class CloudSimScenario:
         except KeyError:
             self.monitors[name] = Monitor ()
 
-    def addVisualisation (self, name, visualisation):
+        return self.monitors[name]
+
+    def addMonitorPlot (self, name):
         try:
             self.monitors[name]
         except KeyError:
-            print "Error: %s isn't a valid monitor name" % (name)
-            sys.exit (-1)
+            print 'Error: Monitor name "%s" not defined' % (name)
 
         try:
-            self.visualisation[name]
-            print 'Error: Monitor name "%s" already has a visualiser defined' % (name)
+            self.monitorPlots[name]
+            print 'Error: Plot function already defined for monitor %s' % (name)
             sys.exit (-1)
         except KeyError:
-            self.visualisation[name] = visualisation
+            self.monitorPlots[name] = self.monitors[name]
 
-    def displayVisualisation (self):
-        for each in self.monitors:
-            print self.visualisation[each]()
+    def addMonitorFunction (self, name, fn):
+        try:
+            self.monitors[name]
+        except KeyError:
+            print 'Error: Monitor name "%s" not defined' % (name)
+
+        try:
+            self.monitorFunctions[name]
+            print 'Error: Monitor function already defined for monitor %s' % (name)
+            sys.exit (-1)
+        except KeyError:
+            self.monitorFunctions [name] = fn
+            
+    def executeMonitorFunctions (self):
+        for each in self.monitorFunctions:
+            print "%s : %s" % (each, self.monitorFunctions[each]())
+
+    def executeMonitorPlots (self):
+        for each in self.monitorPlots:
+            plot = SimPlot ()
+            pl = plot.plotLine (self.monitors[each])
+            pl.mainloop ()

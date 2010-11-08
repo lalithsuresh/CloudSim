@@ -85,7 +85,8 @@ def run(scenario, verbose=True):
     
     simulate(until=scenario.sim_time)
 
-    scenario.displayVisualisation ()
+    scenario.executeMonitorFunctions()
+    scenario.executeMonitorPlots()
    
     return scenario, now()
 

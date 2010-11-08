@@ -9,8 +9,9 @@ class Scheduler(Process):
         self.tasks = {}
         self.running = 0
 
-        scenario.addMonitor ("queueSizeMon")
-        scenario.addVisualisation ("queueSizeMon", self.scenario.monitors ["queueSizeMon"].mean)
+        temp = scenario.addMonitor ("queueSizeMon")
+        scenario.addMonitorFunction ("queueSizeMon", temp.var)
+        scenario.addMonitorPlot ("queueSizeMon")
 
     def addJob(self, job):
         jobList = self.tasks.get(job.taskId)
