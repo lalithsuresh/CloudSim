@@ -64,8 +64,11 @@ def parse_args():
     return scenario
 
 def run(scenario, verbose=True):
+    print "--------- CloudSim ---------"
+    print "----------------------------"
     initialize()
     scenario.init_objects()
+    print "- Scenario initiated"
 
     global inputFile
     inputFile = open (inputFile, 'r')
@@ -79,7 +82,10 @@ def run(scenario, verbose=True):
         taskGenerator = TaskGenerator (scenario, [params])  # Generate one TaskGenerator per input line
         activate (taskGenerator, taskGenerator.run(scenario.sim_time))
     
+    print "- Task Generators created"
+    print "- Running Simulation"
     simulate(until=scenario.sim_time)
+    print "- Simulation complete"
 
     scenario.finish_objects()
 

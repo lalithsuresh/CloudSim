@@ -80,7 +80,7 @@ class CloudSimScenario:
             print 'Error: Monitor name "%s" is already being used' % (name)
             sys.exit (-1)
         except KeyError:
-            self.monitors[name] = Monitor ()
+            self.monitors[name] = Monitor (name = name)
 
         return self.monitors[name]
 
@@ -111,11 +111,16 @@ class CloudSimScenario:
             self.monitorFunctions [name] = fn
             
     def executeMonitorFunctions (self):
+        print "---------"
+        print "- Calculating monitor functions"
         for each in self.monitorFunctions:
-            print "%s : %s" % (each, self.monitorFunctions[each]())
+            print "%s\t:\t %s" % (each, self.monitorFunctions[each]())
 
     def executeMonitorPlots (self):
+        print "---------"
+        print "- Generating graph files"
         for each in self.monitorPlots:
             plot = SimPlot ()
-            pl = plot.plotLine (self.monitors[each])
-            pl.mainloop ()
+            pl = plot.plotLine (self.monitors[each], color="blue",width=2)
+            pl.postscr(each + ".ps")
+            print "Graph file created\t:\t " + each + ".ps"
