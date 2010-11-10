@@ -1,0 +1,52 @@
+1. CloudSim
+--------
+
+CloudSim is a simulator for a Cloud infrastructure (surprise!) developed on top of the SimPy framework.
+It's main purpose for now, is to simulate a Scheduler for a cloud, but this can easily be extended to more
+complicated functionalities.
+
+
+2. Requirements
+------------
+
+1. Python >= 2.5
+2. SimPy
+3. 50 nodes on a cloud platform of your choice. Just kidding.
+
+
+3. Running
+------
+
+$: python CloudSim.py --input <input-file> --conf <conf-file>
+
+
+4. Working
+------
+
+The basic organisation of the cloud infrastructure comprises of:
+
+1) Task Generators
+2) A scheduler
+3) Machines for job execution
+
+Inputs are read from the input file, and task generators feed jobs from these tasks
+into the scheduler. The scheduler, based on the scheduling algorithm being used,
+assigns these jobs to different machines from the cloud infratsructure. It may
+also start new machines, stop existing ones, or hold back jobs. The below diagram
+depicts the overall structure.
+
+                ScheduleJob
+TaskGenerator 1 -----------
+                          V       SubmitJobsForExecution
+TaskGenerator 2 -----> Scheduler --------------------------> Machine 1
+     .                    ^                     |
+     .                    |                     |----------> Machine 2
+TaskGenerator N ----------                      |
+                                                 ----------> Machine N
+
+
+5. Credits
+------
+
+Paulo Ricardo Motta Gomes <pauloricardomg@gmail.com>
+Lalith Suresh <suresh.lalith@gmail.com
