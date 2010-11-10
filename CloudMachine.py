@@ -6,23 +6,30 @@ class CloudMachine(Process):
     def __init__(self, mId, scenario, start=0):
         Process.__init__(self, name="M-"+str(mId))
         self.id = mId
-        self.jobs = {}
+        self.jobs = []
         self.started = start
         self.startTime = 0
+        self.stopTime = 0
         self.memory = {}
         self.availMem = scenario.wn_mem
         self.info = scenario
-        self.debug = True
+        self.debug = False
 
     def addJob (self, job):
-        job.worker = self
-        self.jobs[job.jobId] = job
+        job.workerId = self.id
+        self.jobs.append(job)
         if (len(self.jobs) == 1):
             reactivate (self)
 
     def log(self, msg):
         if(self.debug):
           print self.name + ">> " + msg
+
+    def getCost(self):
+        if(self.stopTime == 0):
+            return now() - self.startTime
+        else:
+            return self.stopTime - self.startTime
 
     def start(self):
         if(self.started == 0):
@@ -42,7 +49,7 @@ class CloudMachine(Process):
 
             # Selects next job in the list (round robin) 
             index = (index+1)%len(self.jobs) 
-            currentJob = self.jobs.items()[index][1]
+            currentJob = self.jobs[index]
 
             self.log("Selected job: " + str(currentJob.jobId))
 
@@ -72,14 +79,19 @@ class CloudMachine(Process):
             if(currentJob.size <= 0):
                 self.finishJob(currentJob)
 
+    def stop(self):
+        self.finished = 1
+        self.stopTime = now()
+        for job in self.jobs:
+            job.workerId = None
+
 
     def finishJob(self, job):
         self.log("Finishing job " + str(job.jobId))
-        del self.jobs[job.jobId]
-        job.finished = 1
+        self.jobs.remove(job)
+        job.finished = True
         self.swapOut(job.jobId)
-        # Notify scheduler
-
+        self.info.scheduler.jobFinished(job)
     
     def swapOut(self, jobId):
         mem = self.memory.pop(jobId)

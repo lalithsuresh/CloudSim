@@ -43,8 +43,8 @@ class TaskGenerator(Process):
                     reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
                     reqMem = int (self.memRandomObject.uniform (lowMemBound, highMemBound))
                     # JobId = 0, TaskId = taskId
-                    jobInTask = Job (name, reqInstr, reqMem, taskId, numJobs, 0, self.scenario)
-                    task = Task ("Task" + str(taskId), taskId, [jobInTask], self.scenario)
+                    jobInTask = Job (name, reqInstr, reqMem, taskId, numJobs, 0)
+                    task = Task ("Task" + str(taskId), taskId, [jobInTask])
                     webTaskBucket.append(task)
                 
                 self.tasklist.append (webTaskBucket)
@@ -57,9 +57,9 @@ class TaskGenerator(Process):
                     name = "Job%s-%s" % (jobId, startingTaskId)
                     reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
                     reqMem = int (self.memRandomObject.uniform (lowMemBound, highMemBound))
-                    joblist.append (Job (name, reqInstr, reqMem, startingTaskId, numJobs, jobId, self.scenario))
+                    joblist.append (Job (name, reqInstr, reqMem, startingTaskId, numJobs, jobId))
              
-                task = Task ("Task" + str(startingTaskId), startingTaskId, joblist, self.scenario)
+                task = Task ("Task" + str(startingTaskId), startingTaskId, joblist)
                 self.tasklist.append ([task])
 
     def getNJobsFromBucket (self, i, rateOfJobGeneration, N, jobsToBeAdded):
@@ -89,7 +89,7 @@ class TaskGenerator(Process):
         # Populate the task list
         self.generate_tasks()
          
-        activate (self.scenario.scheduler, self.scenario.scheduler.run())
+        #activate (self.scenario.scheduler, self.scenario.scheduler.run())
 
         times = len (self.tasklist)
 

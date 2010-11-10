@@ -4,7 +4,6 @@ from SimPy.SimPlot import *
 import random
 from SchedulingAlgos import *
 from Scheduler import *
-from CloudMachine import *
 
 DEFAULT_CONF_FILE = "scheduler.conf"
 
@@ -41,17 +40,10 @@ class CloudSimScenario:
         #Scheduling algorithm (either random or round robin)
         self.schedule_algorithm = algorithms_map[self.nextProperty(conf)]
 
-        self.machines = []
-        self.genId = 0
-
         self.initiated = False
         self.monitors = {}
         self.monitorPlots = {}
         self.monitorFunctions = {}
-
-        temp = self.addMonitor ("totalNodes")
-        self.addMonitorFunction ("totalNodes", temp.mean)
-        self.addMonitorPlot ("totalNodes")
 
     def plotLine (self,monitor):
         SimPlot().plotLine (monitor).mainloop()
@@ -69,15 +61,18 @@ class CloudSimScenario:
             self.initiated = True
         #objects
         self.scheduler = Scheduler(self)
-        for m_id in range(self.initial_machines):
-           self.createMachine(1)
+        
+        # Activate scheduler
+        activate(self.scheduler, self.scheduler.run())
 
-    def createMachine(self, started=0):
-        machine = CloudMachine(self.genId, self, started)
-        self.machines.append(machine)
-        self.genId += 1
-        self.monitors ["totalNodes"].observe (self.genId)
-        return machine
+    def finish_objects(self):
+        if not self.initiated:
+            raise Exception("Objects not initiated")
+        else:
+            self.initiated = False
+        
+        #stop scheduler
+        self.scheduler.stop()
 
     def addMonitor (self, name):
         try: 

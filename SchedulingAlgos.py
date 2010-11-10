@@ -31,7 +31,7 @@ def get_non_allocated_jobs(tasks):
 
     for taskJobs in tasks.values():
       for job in taskJobs:
-        if(job.worker == None):
+        if(not job.finished and job.workerId == None):
           result.append(job)
 
     return result

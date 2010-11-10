@@ -64,9 +64,9 @@ def parse_args():
     return scenario
 
 def run(scenario, verbose=True):
-    scenario.init_objects()
     initialize()
-    
+    scenario.init_objects()
+
     global inputFile
     inputFile = open (inputFile, 'r')
     # Remove trailing endline characters
@@ -78,12 +78,10 @@ def run(scenario, verbose=True):
         params = (map(lambda x: x[:-1], y[:-1]) + [y[-1]]) 
         taskGenerator = TaskGenerator (scenario, [params])  # Generate one TaskGenerator per input line
         activate (taskGenerator, taskGenerator.run(scenario.sim_time))
-
-    #Activate initial machines
-    for machine in scenario.machines:
-        activate(machine, machine.start())
     
     simulate(until=scenario.sim_time)
+
+    scenario.finish_objects()
 
     scenario.executeMonitorFunctions()
     scenario.executeMonitorPlots()
