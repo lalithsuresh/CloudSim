@@ -38,7 +38,11 @@ class CloudSimScenario:
         #Simulation time
         self.sim_time = int(self.nextProperty(conf))
         #Scheduling algorithm (either random or round robin)
-        self.schedule_algorithm = algorithms_map[self.nextProperty(conf)]
+        self.algoName = self.nextProperty(conf)
+        self.schedule_algorithm = algorithms_map[self.algoName]
+        #Random seed
+        self.seed = int(self.nextProperty(conf))
+        random.seed(self.seed)
 
         self.initiated = False
         self.monitors = {}
@@ -84,25 +88,15 @@ class CloudSimScenario:
 
         return self.monitors[name]
 
-    def addMonitorPlot (self, name):
-        try:
-            self.monitors[name]
-        except KeyError:
-            print 'Error: Monitor name "%s" not defined' % (name)
-
+    def addMonitorPlot (self, name, monitor):
         try:
             self.monitorPlots[name]
             print 'Error: Plot function already defined for monitor %s' % (name)
             sys.exit (-1)
         except KeyError:
-            self.monitorPlots[name] = self.monitors[name]
+            self.monitorPlots[name] = monitor
 
     def addMonitorFunction (self, name, fn):
-        try:
-            self.monitors[name]
-        except KeyError:
-            print 'Error: Monitor name "%s" not defined' % (name)
-
         try:
             self.monitorFunctions[name]
             print 'Error: Monitor function already defined for monitor %s' % (name)
@@ -120,7 +114,8 @@ class CloudSimScenario:
         print "---------"
         print "- Generating graph files"
         for each in self.monitorPlots:
+            fileName = each + " - Seed " + str(self.seed) + ".ps"
             plot = SimPlot ()
-            pl = plot.plotLine (self.monitors[each], color="blue",width=2)
-            pl.postscr(each + ".ps")
-            print "Graph file created\t:\t " + each + ".ps"
+            pl = plot.plotLine (self.monitorPlots[each], color="blue",width=2)
+            pl.postscr(fileName)
+            print "Graph file created\t:\t " + fileName

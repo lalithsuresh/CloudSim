@@ -1,6 +1,5 @@
 # Python modules
 import sys
-import random
 
 # Simpy modules
 from SimPy.Simulation import *
@@ -75,14 +74,25 @@ def run(scenario, verbose=True):
     # Remove trailing endline characters
     temp = map (lambda x : x.strip (), inputFile.readlines ())
     params = []
+    totalJobs = 0
     for each in temp:
         y = each.split()
         # Remove commas from each input element except the last
         params = (map(lambda x: x[:-1], y[:-1]) + [y[-1]]) 
         taskGenerator = TaskGenerator (scenario, [params])  # Generate one TaskGenerator per input line
+        totalJobs += taskGenerator.numJobs()
         activate (taskGenerator, taskGenerator.run(scenario.sim_time))
     
     print "- Task Generators created"
+    
+    print "---------"
+    print "- Initial data:"
+    print "%s\t:\t %s" % ("Total jobs", str(totalJobs))
+    print "%s\t:\t %s" % ("Random seed",str(scenario.seed))
+    print "%s\t:\t %s" % ("Scheduling algorithm",str(scenario.algoName))
+    print "%s\t:\t %s" % ("Initial workers", str(scenario.initial_machines))
+    print "%s\t:\t %s" % ("Simulation time", str(scenario.sim_time))
+    print "---------"
     print "- Running Simulation"
     simulate(until=scenario.sim_time)
     print "- Simulation complete"
@@ -91,8 +101,51 @@ def run(scenario, verbose=True):
 
     scenario.executeMonitorFunctions()
     scenario.executeMonitorPlots()
-   
+
+    print_result(scenario)
+
     return scenario, now()
+
+def print_result(scenario):
+ 
+    jobsRT = scenario.scheduler.jobsRT
+    tasksRT = scenario.scheduler.tasksRT
+
+    avgJobRT = 0
+    jobRTStdDev = 0
+    if(len(jobsRT) > 0):
+        avgJobRT = sum(jobsRT)/len(jobsRT)
+        summation = 0
+        for rt in jobsRT:
+            summation += (avgJobRT - rt)**2
+        jobRTStdDev = sqrt(summation/len(jobsRT))
+
+    avgTaskRT = 0
+    taskRTStdDev = 0
+    if(len(tasksRT) > 0):
+        avgTaskRT = sum(tasksRT)/len(tasksRT)
+        for rt in scenario.scheduler.tasksRT:
+            summation += (avgTaskRT - rt)**2
+        taskRTStdDev = sqrt(summation/len(tasksRT))
+
+
+    totalTime = 0
+    allMachines = scenario.scheduler.activeMachines+scenario.scheduler.destroyedMachines
+    for machine in allMachines:
+        totalTime += machine.getExecutionTime()
+
+    totalCost = totalTime*scenario.wn_cost
+
+    print "---------"
+    print "- Other results:"
+    print "%s\t:\t %s" % ("Total execution time", str(totalTime))
+#    print "%s\t:\t %s" % ("Total CPU time used",str(scenario.seed))
+    print "%s\t:\t $%s" % ("Total cost",str(totalCost))
+#    print "%s\t:\t %s" % ("Total unused paid time",str(scenario.algoName))
+    print "%s\t:\t %s" % ("Average job response time", str(avgJobRT))
+    print "%s\t:\t %s" % ("Job response time std deviation", str(jobRTStdDev))
+    print "%s\t:\t %s" % ("Average task response time", str(avgTaskRT))
+    print "%s\t:\t %s" % ("Task response time std deviation", str(taskRTStdDev))
 
 def main():
     scenario = parse_args()

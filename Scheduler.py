@@ -18,16 +18,25 @@ class Scheduler(Process):
         self.taskInfos = {}
         self.taskJobs = {}
 
-        self.tasksST = []
-        self.jobsST = []
+        self.tasksRT = []
+        self.jobsRT = []
 
         temp = scenario.addMonitor ("activeNodesMon")
-        scenario.addMonitorFunction ("activeNodesMon", temp.mean)
-        scenario.addMonitorPlot ("activeNodesMon")
+        scenario.addMonitorFunction ("Active nodes average:", temp.mean)
+        scenario.addMonitorPlot ("Active Nodes Series", temp)
 
         temp = scenario.addMonitor ("activeJobsMon")
-        scenario.addMonitorFunction ("activeJobsMon", temp.var)
-        scenario.addMonitorPlot ("activeJobsMon")
+        scenario.addMonitorFunction ("Active jobs average:", temp.mean)
+        scenario.addMonitorPlot ("Active Jobs Series", temp)
+
+        temp = scenario.addMonitor("jobRTAvgMon")
+        scenario.addMonitorPlot ("Average job response time series", temp)
+
+        temp = scenario.addMonitor("taskRTAvgMon")
+        scenario.addMonitorPlot ("Average task response time series", temp)
+
+        temp = scenario.addMonitor("executionCostMon")
+        scenario.addMonitorPlot ("Cost of execution series", temp)
 
     def addJob(self, job):
         job.startTime = now()
@@ -48,8 +57,9 @@ class Scheduler(Process):
         self.taskJobs[job.taskId].remove(job)
 
         # Calculate job service time
-        jobST = finishTime - job.startTime
-        self.jobsST.append(jobST)
+        jobRT = finishTime - job.startTime
+        self.jobsRT.append(jobRT)
+
 
         # Complete job in task info and check if
         # task is completed
@@ -59,8 +69,8 @@ class Scheduler(Process):
         # No tasks remaining - Task finished!
         if(taskInfo[1] == 0):
             # Calculate task service time
-            taskST = finishTime - taskInfo[0] #initialTime
-            self.tasksST.append(taskST)
+            taskRT = finishTime - taskInfo[0] #initialTime
+            self.tasksRT.append(taskRT)
 
     def run(self):
 
@@ -95,6 +105,16 @@ class Scheduler(Process):
             
             self.scenario.monitors ["activeJobsMon"].observe (sum(map(lambda x: len(x), self.taskJobs.values())))
             self.scenario.monitors ["activeNodesMon"].observe (len(self.activeMachines))
+
+            if(len(self.jobsRT) > 0):
+                self.scenario.monitors ["jobRTAvgMon"].observe (sum(self.jobsRT)/len(self.jobsRT))
+            if(len(self.tasksRT) > 0):
+                self.scenario.monitors ["taskRTAvgMon"].observe (sum(self.tasksRT)/len(self.tasksRT))
+
+            currentCost = 0.0
+            for machine in self.activeMachines+self.destroyedMachines:
+                currentCost += machine.getExecutionTime() * self.scenario.wn_cost
+            self.scenario.monitors ["executionCostMon"].observe (currentCost)
 
             yield hold, self, self.scenario.sch_interval
         

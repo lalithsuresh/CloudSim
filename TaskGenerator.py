@@ -14,12 +14,15 @@ class TaskGenerator(Process):
         self.task_parameters = map(lambda x:tuple(x[0]) + tuple (map(lambda y:int(y), x[1:])), input_parameters)
 
         # XXX: Keep seeds modifiable later on!
-        self.cpuRandomObject = random.Random (1)
-        self.memRandomObject = random.Random (2)
+        #self.cpuRandomObject = random.Random (1)
+        #self.memRandomObject = random.Random (2)
         
         # This list of tasks is submitted to the scheduler
         self.tasklist = []
-    
+
+    def numJobs(self):
+        return self.task_parameters[0][2]
+
     def generate_tasks (self):
 
         for each in self.task_parameters:
@@ -40,8 +43,8 @@ class TaskGenerator(Process):
 
                 for taskId in xrange (startingTaskId, startingTaskId + numJobs):
                     name = "Job%s-%s" % (0, taskId)
-                    reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
-                    reqMem = int (self.memRandomObject.uniform (lowMemBound, highMemBound))
+                    reqInstr = int (random.uniform (lowInstrBound, highInstrBound))
+                    reqMem = int (random.uniform (lowMemBound, highMemBound))
                     # JobId = 0, TaskId = taskId
                     jobInTask = Job (name, reqInstr, reqMem, taskId, numJobs, 0)
                     task = Task ("Task" + str(taskId), taskId, [jobInTask])
@@ -55,8 +58,8 @@ class TaskGenerator(Process):
 
                 for jobId in xrange (startingJobId, startingJobId + numJobs):
                     name = "Job%s-%s" % (jobId, startingTaskId)
-                    reqInstr = int (self.cpuRandomObject.uniform (lowInstrBound, highInstrBound))
-                    reqMem = int (self.memRandomObject.uniform (lowMemBound, highMemBound))
+                    reqInstr = int (random.uniform (lowInstrBound, highInstrBound))
+                    reqMem = int (random.uniform (lowMemBound, highMemBound))
                     joblist.append (Job (name, reqInstr, reqMem, startingTaskId, numJobs, jobId))
              
                 task = Task ("Task" + str(startingTaskId), startingTaskId, joblist)
@@ -119,4 +122,4 @@ class TaskGenerator(Process):
                         numJobs -= 1
 
                     yield hold, self, 1
-                    print "Current time: " + str(now())
+                    #print "Current time: " + str(now())
