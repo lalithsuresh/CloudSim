@@ -10,7 +10,8 @@ complicated functionalities.
 ------------
 
 1. Python >= 2.5
-2. SimPy
+2. GhostView
+3. SimPy (already bundled in the package)
 3. 50 nodes on a cloud platform of your choice. Just kidding.
 
 
@@ -18,15 +19,32 @@ complicated functionalities.
 -------------------
 
 - Ubuntu 10.04 ~x86.
+- Ubuntu 10.04 ~x64.
+- Windows 7 ~x64 
 
 
 4. Running
 ----------
 
-$: python CloudSim.py --input <input-file> --conf <conf-file>
+$: python(.exe) CloudSim.py --input <input-file> --conf <conf-file>
 
 
-5. Working
+5. Examples
+-----------
+
+Two example input files are provided: a simulation input file named "input",
+and a default configuration file "scheduler.conf".
+
+6. Generated graph files
+------------------------
+
+In order to visualize the CloudSim generated graph files (.ps format), you should
+have GhostScript installed, and a proper visualization tool (such as evince or GSView).
+In general, UNIX system have these tools installed by default. In Windows or other
+systems, please download and install the latest version of these tools on: 
+http://pages.cs.wisc.edu/~ghost/
+
+7. Working
 ----------
 
 The basic organisation of the cloud infrastructure comprises of:
@@ -44,14 +62,14 @@ depicts the overall structure.
                 ScheduleJob
 TaskGenerator 1 -----------
                           V       SubmitJobsForExecution
-TaskGenerator 2 -----> Scheduler --------------------------> Machine 1
-     .                    ^                     |
-     .                    |                     |----------> Machine 2
-TaskGenerator N ----------                      |
-                                                 ----------> Machine N
+TaskGenerator 2 -----> Scheduler ----------------------> Machine 1
+     .                    ^                  |
+     .                    |                  |---------> Machine 2
+TaskGenerator N ----------                   |
+                                              ---------> Machine N
 
 
-6. Credits
+8. Credits
 ------
 
 Paulo Ricardo Motta Gomes <pauloricardomg@gmail.com>

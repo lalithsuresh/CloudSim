@@ -22,19 +22,19 @@ class Scheduler(Process):
         self.jobsRT = []
 
         temp = scenario.addMonitor ("activeNodesMon")
-        scenario.addMonitorPlot ("Running nodes series", temp)
+        scenario.addMonitorPlot ("Running nodes", temp)
 
         temp = scenario.addMonitor ("activeJobsMon")
-        scenario.addMonitorPlot ("Running Jobs series", temp)
+        scenario.addMonitorPlot ("Running Jobs", temp)
 
         temp = scenario.addMonitor("jobRTAvgMon")
-        scenario.addMonitorPlot ("Average job response time series", temp)
+        scenario.addMonitorPlot ("Average job response time", temp)
 
         temp = scenario.addMonitor("taskRTAvgMon")
-        scenario.addMonitorPlot ("Average task response time series", temp)
+        scenario.addMonitorPlot ("Average task response time", temp)
 
         temp = scenario.addMonitor("executionCostMon")
-        scenario.addMonitorPlot ("Cost of execution series", temp)
+        scenario.addMonitorPlot ("Cost of execution", temp)
 
     def addJob(self, job):
         job.startTime = now()

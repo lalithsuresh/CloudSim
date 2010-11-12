@@ -94,6 +94,8 @@ class CloudSimScenario:
             print 'Error: Plot function already defined for monitor %s' % (name)
             sys.exit (-1)
         except KeyError:
+            monitor.ylab=name
+            monitor.tlab="time"
             self.monitorPlots[name] = monitor
 
     def addMonitorFunction (self, name, fn):
@@ -114,7 +116,7 @@ class CloudSimScenario:
         self.printSep()
         print "- Generating graph files"
         for each in self.monitorPlots:
-            fileName = each + " - Seed " + str(self.seed) + ".ps"
+            fileName = each + " series - Seed " + str(self.seed) + ".ps"
             plot = SimPlot ()
             pl = plot.plotLine (self.monitorPlots[each], color="blue",width=2)
             pl.postscr(fileName)
