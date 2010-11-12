@@ -105,13 +105,13 @@ class CloudSimScenario:
             self.monitorFunctions [name] = fn
             
     def executeMonitorFunctions (self):
-        print "---------"
+        self.printSep()
         print "- Calculating monitor functions"
         for each in self.monitorFunctions:
             print "%s\t:\t %s" % (each, self.monitorFunctions[each]())
 
     def executeMonitorPlots (self):
-        print "---------"
+        self.printSep()
         print "- Generating graph files"
         for each in self.monitorPlots:
             fileName = each + " - Seed " + str(self.seed) + ".ps"
@@ -119,3 +119,6 @@ class CloudSimScenario:
             pl = plot.plotLine (self.monitorPlots[each], color="blue",width=2)
             pl.postscr(fileName)
             print "Graph file created\t:\t " + fileName
+
+    def printSep(self):
+        print "-----------------------------------------"

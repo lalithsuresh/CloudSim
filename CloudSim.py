@@ -63,12 +63,30 @@ def parse_args():
     return scenario
 
 def run(scenario, verbose=True):
-    print "--------- CloudSim ---------"
-    print "----------------------------"
+    print "--------------- CloudSim ----------------"
+    print "-----------------------------------------"
     initialize()
     scenario.init_objects()
     print "- Scenario initiated"
 
+    print_initial_data(scenario)
+
+    init_task_generators(scenario)
+
+    scenario.printSep()
+    print "- Running Simulation"
+    simulate(until=scenario.sim_time)
+    print "- Simulation complete"
+
+    scenario.finish_objects()
+
+    print_result(scenario)
+
+    scenario.executeMonitorPlots()
+
+    return scenario, now()
+
+def init_task_generators(scenario):
     global inputFile
     inputFile = open (inputFile, 'r')
     # Remove trailing endline characters
@@ -82,35 +100,27 @@ def run(scenario, verbose=True):
         taskGenerator = TaskGenerator (scenario, [params])  # Generate one TaskGenerator per input line
         totalJobs += taskGenerator.numJobs()
         activate (taskGenerator, taskGenerator.run(scenario.sim_time))
-    
+
+    scenario.printSep()
     print "- Task Generators created"
-    
-    print "---------"
+    print "%s\t:\t %s" % ("Jobs to be generated", str(totalJobs))
+
+
+def print_initial_data(scenario):
+    scenario.printSep()
     print "- Initial data:"
-    print "%s\t:\t %s" % ("Total jobs", str(totalJobs))
     print "%s\t:\t %s" % ("Random seed",str(scenario.seed))
     print "%s\t:\t %s" % ("Scheduling algorithm",str(scenario.algoName))
-    print "%s\t:\t %s" % ("Initial workers", str(scenario.initial_machines))
+    print "%s\t:\t %s" % ("Started workers", str(scenario.initial_machines))
     print "%s\t:\t %s" % ("Simulation time", str(scenario.sim_time))
-    print "---------"
-    print "- Running Simulation"
-    simulate(until=scenario.sim_time)
-    print "- Simulation complete"
-
-    scenario.finish_objects()
-
-    scenario.executeMonitorFunctions()
-    scenario.executeMonitorPlots()
-
-    print_result(scenario)
-
-    return scenario, now()
 
 def print_result(scenario):
  
     jobsRT = scenario.scheduler.jobsRT
     tasksRT = scenario.scheduler.tasksRT
 
+    # Calculate job response time average
+    # and standard deviation
     avgJobRT = 0
     jobRTStdDev = 0
     if(len(jobsRT) > 0):
@@ -118,30 +128,38 @@ def print_result(scenario):
         summation = 0
         for rt in jobsRT:
             summation += (avgJobRT - rt)**2
-        jobRTStdDev = sqrt(summation/len(jobsRT))
+        jobRTStdDev = math.sqrt(summation/len(jobsRT)-1)
 
+    # Calculate job response time average
+    # and standard deviation
     avgTaskRT = 0
     taskRTStdDev = 0
     if(len(tasksRT) > 0):
         avgTaskRT = sum(tasksRT)/len(tasksRT)
         for rt in scenario.scheduler.tasksRT:
             summation += (avgTaskRT - rt)**2
-        taskRTStdDev = sqrt(summation/len(tasksRT))
+        taskRTStdDev = math.sqrt(summation/len(tasksRT)-1)
 
-
-    totalTime = 0
     allMachines = scenario.scheduler.activeMachines+scenario.scheduler.destroyedMachines
+
+    # Calculate total execution time,
+    # wasted time, CPU time and total cost
+    totalTime = 0
+    wastedTime = 0
+    cpuTime = 0
     for machine in allMachines:
         totalTime += machine.getExecutionTime()
+        wastedTime += machine.getWastedTime()
+        cpuTime += machine.getCPUTime()
 
     totalCost = totalTime*scenario.wn_cost
 
-    print "---------"
-    print "- Other results:"
+    scenario.printSep()
+    print "- Simulation results:"
     print "%s\t:\t %s" % ("Total execution time", str(totalTime))
-#    print "%s\t:\t %s" % ("Total CPU time used",str(scenario.seed))
+    print "%s\t:\t %s" % ("Total CPU time used",str(cpuTime))
     print "%s\t:\t $%s" % ("Total cost",str(totalCost))
-#    print "%s\t:\t %s" % ("Total unused paid time",str(scenario.algoName))
+    print "%s\t:\t $%s" % ("Total unused paid time",str(wastedTime))
     print "%s\t:\t %s" % ("Average job response time", str(avgJobRT))
     print "%s\t:\t %s" % ("Job response time std deviation", str(jobRTStdDev))
     print "%s\t:\t %s" % ("Average task response time", str(avgTaskRT))

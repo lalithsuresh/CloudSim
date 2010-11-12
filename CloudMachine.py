@@ -12,7 +12,8 @@ class CloudMachine(Process):
         self.stopTime = 0
         self.memory = {}
         self.availMem = scenario.wn_mem
-        self.info = scenario
+        self.scenario = scenario
+        self.wasted = 0
         self.debug = False
 
     def addJob (self, job):
@@ -31,53 +32,62 @@ class CloudMachine(Process):
         else:
             return self.stopTime - self.startTime
 
+    def getWastedTime(self):
+        return self.wasted
+
+    def getCPUTime(self):
+        return self.getExecutionTime() - self.wasted
+
     def start(self):
         if(self.started == 0):
           self.startTime = now()
           self.log("Starting machine.")
           self.started = 1
           # Holds for startup time
-          yield hold,self,self.info.wn_startup
+          yield hold,self,self.scenario.wn_startup
        
         index = -1
 
         while(self.started):
-            if(len(self.jobs) == 0):
-               yield passivate, self
 
             self.log("Jobs count: " + str(len(self.jobs)))
 
-            # Selects next job in the list (round robin) 
-            index = (index+1)%len(self.jobs) 
-            currentJob = self.jobs[index]
+            if(len(self.jobs) > 0):
 
-            self.log("Selected job: " + str(currentJob.jobId))
+                # Selects next job in the list (round robin) 
+                index = (index+1)%len(self.jobs) 
+                currentJob = self.jobs[index]
 
-            swapInsts = 0
+                self.log("Selected job: " + str(currentJob.jobId))
 
-            if(not self.memory.has_key(currentJob.jobId)):
-                swapInsts = self.doSwapping(currentJob)
+                swapInsts = 0
 
-            neededInstr = currentJob.size + swapInsts
-            neededTime =  float(neededInstr)/self.info.wn_speed
+                if(not self.memory.has_key(currentJob.jobId)):
+                    swapInsts = self.doSwapping(currentJob)
+
+                neededInstr = currentJob.size + swapInsts
+                neededTime =  float(neededInstr)/self.scenario.wn_speed
  
-            quantum = min(self.info.wn_quantum,neededTime)
+                quantum = min(self.scenario.wn_quantum,neededTime)
 
-            # Executes selected job
-            # instructions for a quantum
-            yield hold,self,quantum
+                # Executes selected job
+                # instructions for a quantum
+                yield hold,self,quantum
 
-            self.log("Quantum: " + str(quantum) + "s")
+                self.log("Quantum: " + str(quantum) + "s")
 
-            executed = (int)(quantum*self.info.wn_speed) - swapInsts
+                executed = (int)(quantum*self.scenario.wn_speed) - swapInsts
 
-            if(executed > 0):
-                currentJob.size -= executed
+                if(executed > 0):
+                    currentJob.size -= executed
 
-            self.log("Job " + str(currentJob.jobId) + " size is: " + str(currentJob.size) + "insts.")
+                self.log("Job " + str(currentJob.jobId) + " size is: " + str(currentJob.size) + "insts.")
 
-            if(currentJob.size <= 0):
-                self.finishJob(currentJob)
+                if(currentJob.size <= 0):
+                    self.finishJob(currentJob)
+            else:
+                self.wasted += self.scenario.wn_quantum
+                yield hold,self,self.scenario.wn_quantum
 
     def stop(self):
         self.finished = 1
@@ -91,7 +101,7 @@ class CloudMachine(Process):
         self.jobs.remove(job)
         job.finished = True
         self.swapOut(job.jobId)
-        self.info.scheduler.jobFinished(job)
+        self.scenario.scheduler.jobFinished(job)
     
     def swapOut(self, jobId):
         mem = self.memory.pop(jobId)
@@ -126,4 +136,8 @@ class CloudMachine(Process):
         # Memory has enough space - SWAP IN
         swapIn = self.swapIn(job.jobId,job.req_mem)
 
-        return max(1,int(self.info.wn_swap*max(swapOut,swapIn)))
+        swapInsts = max(1,int(self.scenario.wn_swap*max(swapOut,swapIn)))
+
+        self.wasted += swapInsts/self.scenario.wn_speed
+
+        return swapInsts

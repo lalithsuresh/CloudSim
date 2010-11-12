@@ -22,12 +22,10 @@ class Scheduler(Process):
         self.jobsRT = []
 
         temp = scenario.addMonitor ("activeNodesMon")
-        scenario.addMonitorFunction ("Active nodes average:", temp.mean)
-        scenario.addMonitorPlot ("Active Nodes Series", temp)
+        scenario.addMonitorPlot ("Running nodes series", temp)
 
         temp = scenario.addMonitor ("activeJobsMon")
-        scenario.addMonitorFunction ("Active jobs average:", temp.mean)
-        scenario.addMonitorPlot ("Active Jobs Series", temp)
+        scenario.addMonitorPlot ("Running Jobs series", temp)
 
         temp = scenario.addMonitor("jobRTAvgMon")
         scenario.addMonitorPlot ("Average job response time series", temp)
