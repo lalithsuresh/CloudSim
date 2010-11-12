@@ -25,7 +25,7 @@ class CloudMachine(Process):
         if(self.debug):
           print self.name + ">> " + msg
 
-    def getCost(self):
+    def getExecutionTime(self):
         if(self.stopTime == 0):
             return now() - self.startTime
         else:
