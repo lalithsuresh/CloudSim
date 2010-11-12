@@ -14,14 +14,20 @@ complicated functionalities.
 3. 50 nodes on a cloud platform of your choice. Just kidding.
 
 
-3. Running
-------
+3. Tested Platforms
+-------------------
+
+- Ubuntu 10.04 ~x86.
+
+
+4. Running
+----------
 
 $: python CloudSim.py --input <input-file> --conf <conf-file>
 
 
-4. Working
-------
+5. Working
+----------
 
 The basic organisation of the cloud infrastructure comprises of:
 
@@ -45,7 +51,7 @@ TaskGenerator N ----------                      |
                                                  ----------> Machine N
 
 
-5. Credits
+6. Credits
 ------
 
 Paulo Ricardo Motta Gomes <pauloricardomg@gmail.com>
