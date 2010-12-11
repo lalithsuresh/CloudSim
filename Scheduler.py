@@ -13,6 +13,9 @@ class Scheduler(Process):
         self.activeMachines = []
         self.destroyedMachines = []
 
+        self.jobsPerMachine = {}
+
+
         # [0] startTime
         # [1] remainingJobs
         self.taskInfos = {}
@@ -36,9 +39,26 @@ class Scheduler(Process):
         temp = scenario.addMonitor("executionCostMon")
         scenario.addMonitorPlot ("Cost of execution", temp)
 
+        self.taskMeanTimes = {} #TaskId > meanCompletionTime
+
+        self.jobTimes = {} #JobId > jobCompletionTime
+
+        self.taskIncomingRate = {} #TaskId > 
+
+
     def addJob(self, job):
         job.startTime = now()
-        
+ 
+        try:
+          incomingRate = self.taskIncomingRate[job.taskId]
+          if(incomingRate[1] == now()):
+            incomingRate[0] += 1
+            self.taskIncomingRate[job.taskId] = incomingRate
+        except:
+          self.taskIncomingRate[job.taskId] = [1, now()]
+      
+        self.jobTimes[(job.taskId, job.jobId)] = -now()
+
         jobList = self.taskJobs.get(job.taskId)
         if(jobList == None):
             jobList = []
@@ -48,12 +68,27 @@ class Scheduler(Process):
         jobList.append(job)
         self.taskJobs[job.taskId] = jobList
 
-    def jobFinished(self, job):
+    def jobFinished(self, job, machineId):
         finishTime = now()
+
+        self.jobTimes[(job.taskId, job.jobId)] += finishTime
+
+        jobTime = self.jobTimes[(job.taskId, job.jobId)]
+        try:
+          previousMean = self.taskMeanTimes[job.taskId]
+          self.taskMeanTimes[job.taskId] = \
+                  [(previousMean[0]*previousMean[1] + jobTime)/(previousMean[1]+1), previousMean[1]+1]
+#print "Task mean of task %d was updated to %f" %(job.taskId, self.taskMeanTimes[job.taskId][0])
+
+        except:
+          self.taskMeanTimes[job.taskId] = [jobTime, 1]
 
         # Remove job from job list
         self.taskJobs[job.taskId].remove(job)
-
+        jobsInMachine = self.jobsPerMachine.get(machineId)
+        jobsInMachine.remove(job)
+        self.jobsPerMachine[machineId] = jobsInMachine
+        
         # Calculate job service time
         jobRT = finishTime - job.startTime
         self.jobsRT.append(jobRT)
@@ -63,9 +98,12 @@ class Scheduler(Process):
         # task is completed
         taskInfo = self.taskInfos[job.taskId]
         taskInfo[1] -= 1
-        
+       
+#print "Remaining jobs from task %d: %d" %(job.taskId, taskInfo[1])
+
         # No tasks remaining - Task finished!
         if(taskInfo[1] == 0):
+            print "Task %d is finished" %(job.taskId)
             # Calculate task service time
             taskRT = finishTime - taskInfo[0] #initialTime
             self.tasksRT.append(taskRT)
@@ -100,6 +138,12 @@ class Scheduler(Process):
 
                     # start job on machine
                     machine.addJob(job)
+ 
+                    jobsInMachine = self.jobsPerMachine.get(machine.id)
+                    if(jobsInMachine == None):
+                        jobsInMachine = []
+                    jobsInMachine.append(job)
+                    self.jobsPerMachine[machine.id] = jobsInMachine
             
             self.scenario.monitors ["activeJobsMon"].observe (sum(map(lambda x: len(x), self.taskJobs.values())))
             self.scenario.monitors ["activeNodesMon"].observe (len(self.activeMachines))
@@ -115,7 +159,15 @@ class Scheduler(Process):
             self.scenario.monitors ["executionCostMon"].observe (currentCost)
 
             yield hold, self, self.scenario.sch_interval
-        
+       
+    def guessEstimatedTime(self, taskId):
+        remainingJobs = self.taskInfos[taskId][1]
+
+        remainingJobs -= len(self.jobList[taskId])
+
+        return remainingJobs    
+
+ 
     def destroyMachine(self, machine):
         machine.stop()
         cancel(machine)

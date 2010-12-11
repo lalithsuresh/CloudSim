@@ -101,7 +101,7 @@ class CloudMachine(Process):
         self.jobs.remove(job)
         job.finished = True
         self.swapOut(job.jobId)
-        self.scenario.scheduler.jobFinished(job)
+        self.scenario.scheduler.jobFinished(job, self.id)
     
     def swapOut(self, jobId):
         mem = self.memory.pop(jobId)
