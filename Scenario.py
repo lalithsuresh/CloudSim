@@ -8,7 +8,8 @@ from Scheduler import *
 DEFAULT_CONF_FILE = "scheduler.conf"
 
 algorithms_map = {'random':random_schedule,
-                  'round_robin':round_robin}
+                  'round_robin':round_robin,
+                  'lpt': longest_processing_time_first}
 
 class CloudSimScenario:
     def __init__(self, confPath):
