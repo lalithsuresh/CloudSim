@@ -40,11 +40,11 @@ class CloudMachine(Process):
 
     def start(self):
         if(self.started == 0):
-          self.startTime = now()
           self.log("Starting machine.")
-          self.started = 1
           # Holds for startup time
           yield hold,self,self.scenario.wn_startup
+          self.started = 1
+          self.startTime = now()
        
         index = -1
 

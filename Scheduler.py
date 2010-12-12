@@ -15,7 +15,6 @@ class Scheduler(Process):
 
         self.jobsPerMachine = {}
 
-
         # [0] startTime
         # [1] remainingJobs
         self.taskInfos = {}

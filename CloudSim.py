@@ -76,7 +76,7 @@ def run(scenario, verbose=True):
     scenario.printSep()
     print "- Running Simulation"
     simulate(until=scenario.sim_time)
-    print "- Simulation complete"
+    print "- Simulation complete at %d" %(now())
 
     scenario.finish_objects()
 

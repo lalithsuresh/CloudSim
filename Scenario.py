@@ -35,8 +35,14 @@ class CloudSimScenario:
         self.wn_notification = int(self.nextProperty(conf))
         #Worker node cost (euros/hour);
         self.wn_cost = float(self.nextProperty(conf))
-        #Initial number of worker nodes
+        #Number of worker nodes at startup.
         self.initial_machines = int(self.nextProperty(conf))
+        #Size of the sliding window for the output running average [in seconds]
+        self.averageWindow = int(self.nextProperty(conf))
+        #Polling interval for the output time series [in seconds]
+        self.pollingInterval = int(self.nextProperty(conf))
+        #Percentage of waste, amount of wasted money in the final cost that is acceptable to the client.
+        self.acceptableWaste = int(self.nextProperty(conf))
         #Simulation time
         self.sim_time = int(self.nextProperty(conf))
         #Scheduling algorithm (either random or round robin)
@@ -123,7 +129,6 @@ class CloudSimScenario:
             fileName = each + " series - Seed " + str(self.seed) + ".ps"
             plot = SimPlot ()
             pl = plot.plotLine (self.monitorPlots[each], color="blue",width=2)
-            print "this graph: %s" %(fileName)
             pl.postscr(fileName)
             print "Graph file created\t:\t " + fileName
 
