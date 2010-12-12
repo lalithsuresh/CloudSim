@@ -46,7 +46,8 @@ def longest_processing_time_first (workerList, tasks, scheduler):
 
               for t in tasks:
                 if (job in tasks[t]):
-                  return round_robin (workerList, tasks, scheduler)
+                  temp = {t : [job]}
+                  return round_robin (workerList, temp, scheduler)
             else:
               continue
 
@@ -57,6 +58,8 @@ def longest_processing_time_first (workerList, tasks, scheduler):
             return []
 
     orphanjobs.sort (key= lambda x : scheduler.taskMeanTimes [x.taskId][0])
+    #orphanjobs = orphanjobs [::-1]
+
     for machine in workerList:
          jobs = scheduler.jobsPerMachine.get (machine.id)
 
@@ -66,11 +69,20 @@ def longest_processing_time_first (workerList, tasks, scheduler):
                 S += scheduler.taskMeanTimes [job.taskId][0]
          sums.append ([S, machine])
 
+    flag = 0
+    for each in sums:
+        if (each[0] < 1000):
+          flag = 1
+
     sums.sort ()
     allocations = []
 
+    count = 0
     for each in orphanjobs:
          sums[0][0] += scheduler.taskMeanTimes[each.taskId][0]
+         count += 1
+         if (flag == 0 and count > len(orphanjobs)/2):
+            sums[0][1] = None
          allocations.append ([sums[0][1], each])
          sums.sort ()
 
