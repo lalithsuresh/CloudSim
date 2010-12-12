@@ -26,6 +26,8 @@ def round_robin(workerList, tasks, scheduler):
     return allocations 
 
 idsSubmitted = []
+done = 0
+ESList = []
 
 def longest_processing_time_first (workerList, tasks, scheduler):
     sums = []
@@ -46,10 +48,12 @@ def longest_processing_time_first (workerList, tasks, scheduler):
 
               for t in tasks:
                 if (job in tasks[t]):
-                  temp = {t : [job]}
+                  templist = tasks[t][0:]
+                  templist.remove (job)
+                  temp = {t : [job] + templist[:len(templist)/10]}
                   return round_robin (workerList, temp, scheduler)
             else:
-              continue
+                continue
 
     for job in orphanjobs:
         try:
@@ -69,19 +73,32 @@ def longest_processing_time_first (workerList, tasks, scheduler):
                 S += scheduler.taskMeanTimes [job.taskId][0]
          sums.append ([S, machine])
 
+    ES = 0
+
+    for each in idsSubmitted:
+        ES += scheduler.guessEstimatedTime(each) * scheduler.taskMeanTimes[each][0]
+
+    print ES%3600
+    ESList.append (ES)
     flag = 0
     for each in sums:
-        if (each[0] < 1000):
+        if (each[0] < max(ESList)/10):
           flag = 1
 
     sums.sort ()
     allocations = []
 
+    #if (flag == 0):
+    #  machine = scheduler.createMachine ()
+    
+    if (ES > 1000 and (ES % 3600 <= 200)):
+        scheduler.createMachine ()
+
     count = 0
     for each in orphanjobs:
          sums[0][0] += scheduler.taskMeanTimes[each.taskId][0]
          count += 1
-         if (flag == 0 and count > len(orphanjobs)/2):
+         if (flag == 0):
             sums[0][1] = None
          allocations.append ([sums[0][1], each])
          sums.sort ()
