@@ -35,7 +35,7 @@ class CloudMachine(Process):
 
     def getExecutionCost(self):
         timeInSecs = self.getExecutionTime()
-        timeInHours = math.ceil(timeInSecs/60)
+        timeInHours = math.ceil(timeInSecs/3600.0)
         return timeInHours * self.scenario.wn_cost
 
     def getWastedTime(self):
