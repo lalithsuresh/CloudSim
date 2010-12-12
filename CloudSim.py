@@ -101,6 +101,8 @@ def init_task_generators(scenario):
         totalJobs += taskGenerator.numJobs()
         activate (taskGenerator, taskGenerator.run(scenario.sim_time))
 
+    scenario.remainingTasks = len(temp)
+
     scenario.printSep()
     print "- Task Generators created"
     print "%s\t:\t %s" % ("Jobs to be generated", str(totalJobs))

@@ -101,13 +101,21 @@ class Scheduler(Process):
        
 #print "Remaining jobs from task %d: %d" %(job.taskId, taskInfo[1])
 
-        # No tasks remaining - Task finished!
+        # No jobs remaining - Task finished!
         if(taskInfo[1] == 0):
             print "Task %d is finished" %(job.taskId)
             # Calculate task service time
             taskRT = finishTime - taskInfo[0] #initialTime
             self.tasksRT.append(taskRT)
+        
+        allFinished = True
+        for info in self.taskInfos.values():
+            if(info[1] > 0):
+                allFinished = False
+                break
 
+        if(allFinished and self.scenario.remainingTasks == 0):
+            stopSimulation()
     def run(self):
 
         # Create initial machines

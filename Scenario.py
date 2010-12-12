@@ -9,7 +9,8 @@ DEFAULT_CONF_FILE = "scheduler.conf"
 
 algorithms_map = {'random':random_schedule,
                   'round_robin':round_robin,
-                  'lpt': longest_processing_time_first}
+                  'lpt': longest_processing_time_first,
+                   'ESBOT': ESBOT}
 
 class CloudSimScenario:
     def __init__(self, confPath):
@@ -44,6 +45,8 @@ class CloudSimScenario:
         #Random seed
         self.seed = int(self.nextProperty(conf))
         random.seed(self.seed)
+
+        self.remainingTasks = 0
 
         self.initiated = False
         self.monitors = {}
@@ -120,6 +123,7 @@ class CloudSimScenario:
             fileName = each + " series - Seed " + str(self.seed) + ".ps"
             plot = SimPlot ()
             pl = plot.plotLine (self.monitorPlots[each], color="blue",width=2)
+            print "this graph: %s" %(fileName)
             pl.postscr(fileName)
             print "Graph file created\t:\t " + fileName
 

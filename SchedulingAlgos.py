@@ -88,6 +88,78 @@ def longest_processing_time_first (workerList, tasks, scheduler):
 
     return allocations
 
+
+initialJobs = []
+initialWorkers = []
+
+def ESBOT(workerList, tasks, scheduler):
+
+    # Populate initial workers list
+    # These workers may not be used
+    # for ordinary job executions, since
+    # they're used to estimate the mean
+    # job time for each task
+
+    iJobs = initialJobs[:]
+
+    for job in iJobs:
+        if(job.finished):
+            initialJobs.remove(job)
+            initialWorkers.remove(job.workerId)
+        elif (job.workerId != None and job.workerId not in initialWorkers):
+             initialWorkers.append(job.workerId)
+
+    allocations = []
+    activeWorkers = len(workerList)
+
+    # start one machine for a job of each
+    # not yet allocated task
+    nonAllocated = get_non_allocated_tasks(tasks)
+    if(nonAllocated >= 0):
+        freeMachines = get_free_machines(workerList, scheduler)
+        for job in nonAllocated:
+            machine = freeMachines.pop()
+            if(machine):
+                print "Adding job %d from unallocated task %d to idle machine %d" \
+                      %(job.jobId, job.taskId, machine.id)
+                initialWorkers.append(machine)
+            else:
+                print "Starting new machine for job %d from unallocated task %d." \
+                      %(job.jobId, task.taskId)
+                initialWorkers.append(machine)
+  
+            initialJobs.append(job)
+            allocations.append((machine, job))
+   
+    return allocations
+    
+def get_free_machines(workerList, sch):
+    result = []
+    for worker in workerList:
+        jobs = sch.jobsPerMachine.get(worker.id)
+        if(not jobs):
+            result.append(worker)
+
+    return result
+
+def get_non_allocated_tasks(tasks):
+    
+    result = []
+
+    allocatedTasks = []
+
+    for taskJobs in tasks.values():
+      for job in taskJobs:
+          if(job.finished or job.workerId != None):
+              allocatedTasks.append(job.taskId)
+              break;
+
+    for task in tasks:
+        if(task not in allocatedTasks):
+            result.append(tasks[task][0])
+          
+    return result
+
 def get_non_allocated_jobs(tasks):
     
     result = []

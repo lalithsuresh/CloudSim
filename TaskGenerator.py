@@ -123,3 +123,5 @@ class TaskGenerator(Process):
 
                     yield hold, self, 1
                     #print "Current time: " + str(now())
+
+            self.scenario.remainingTasks -= 1
