@@ -1,6 +1,7 @@
 from SimPy.Simulation import *
 from AbstractResource import *
 from time import *
+import math
 
 class CloudMachine(Process):
     def __init__(self, mId, scenario, start=0):
@@ -32,8 +33,13 @@ class CloudMachine(Process):
         else:
             return self.stopTime - self.startTime
 
+    def getExecutionCost(self):
+        timeInSecs = self.getExecutionTime()
+        timeInHours = math.ceil(timeInSecs/60)
+        return timeInHours * self.scenario.wn_cost
+
     def getWastedTime(self):
-        return self.wasted
+        return self.wasted + self.getExecutionTime()%60
 
     def getCPUTime(self):
         return self.getExecutionTime() - self.wasted

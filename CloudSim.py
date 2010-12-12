@@ -149,22 +149,22 @@ def print_result(scenario):
     totalTime = 0
     wastedTime = 0
     cpuTime = 0
+    totalCost = 0
     for machine in allMachines:
         totalTime += machine.getExecutionTime()
         wastedTime += machine.getWastedTime()
         cpuTime += machine.getCPUTime()
-
-    totalCost = totalTime*scenario.wn_cost
+        totalCost += machine.getExecutionCost()
 
     scenario.printSep()
     print "- Simulation results:"
-    print "%s\t:\t %s" % ("Total execution time", str(totalTime))
-    print "%s\t:\t %s" % ("Total CPU time used",str(cpuTime))
+    print "%s\t:\t %ss" % ("Total execution time", str(totalTime))
+    print "%s\t:\t %ss" % ("Total CPU time used",str(cpuTime))
+    print "%s\t:\t %ss" % ("Total unused paid time",str(wastedTime))
     print "%s\t:\t $%s" % ("Total cost",str(totalCost))
-    print "%s\t:\t $%s" % ("Total unused paid time",str(wastedTime))
-    print "%s\t:\t %s" % ("Average job response time", str(avgJobRT))
+    print "%s\t:\t %ss" % ("Average job response time", str(avgJobRT))
     print "%s\t:\t %s" % ("Job response time std deviation", str(jobRTStdDev))
-    print "%s\t:\t %s" % ("Average task response time", str(avgTaskRT))
+    print "%s\t:\t %ss" % ("Average task response time", str(avgTaskRT))
     print "%s\t:\t %s" % ("Task response time std deviation", str(taskRTStdDev))
 
 def main():

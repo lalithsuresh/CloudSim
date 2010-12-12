@@ -42,7 +42,9 @@ class Scheduler(Process):
 
         self.jobTimes = {} #JobId > jobCompletionTime
 
-        self.taskIncomingRate = {} #TaskId > 
+        self.taskIncomingRate = {} #TaskId >
+
+        self.nextPoll = 0
 
 
     def addJob(self, job):
@@ -139,7 +141,7 @@ class Scheduler(Process):
                 if(job == None):
                     self.destroyMachine(machine)
                 else:
-                    # if machine is undefined, start job
+                    # if machine is undefined, start machine
                     if(machine == None):
                         machine = self.createMachine()
 
@@ -151,19 +153,23 @@ class Scheduler(Process):
                         jobsInMachine = []
                     jobsInMachine.append(job)
                     self.jobsPerMachine[machine.id] = jobsInMachine
-            
-            self.scenario.monitors ["activeJobsMon"].observe (sum(map(lambda x: len(x), self.taskJobs.values())))
-            self.scenario.monitors ["activeNodesMon"].observe (len(self.activeMachines))
+           
 
-            if(len(self.jobsRT) > 0):
-                self.scenario.monitors ["jobRTAvgMon"].observe (sum(self.jobsRT)/len(self.jobsRT))
-            if(len(self.tasksRT) > 0):
-                self.scenario.monitors ["taskRTAvgMon"].observe (sum(self.tasksRT)/len(self.tasksRT))
+            if(int(now()) == self.nextPoll):
+                self.scenario.monitors ["activeJobsMon"].observe (sum(map(lambda x: len(x), self.taskJobs.values())))
+                self.scenario.monitors ["activeNodesMon"].observe (len(self.activeMachines))
 
-            currentCost = 0.0
-            for machine in self.activeMachines+self.destroyedMachines:
-                currentCost += machine.getExecutionTime() * self.scenario.wn_cost
-            self.scenario.monitors ["executionCostMon"].observe (currentCost)
+                if(len(self.jobsRT) > 0):
+                    self.scenario.monitors ["jobRTAvgMon"].observe (sum(self.jobsRT)/len(self.jobsRT))
+                if(len(self.tasksRT) > 0):
+                    self.scenario.monitors ["taskRTAvgMon"].observe (sum(self.tasksRT)/len(self.tasksRT))
+
+                currentCost = 0.0
+                for machine in self.activeMachines+self.destroyedMachines:
+                    currentCost += machine.getExecutionCost()
+                self.scenario.monitors ["executionCostMon"].observe (currentCost)
+
+                self.nextPoll += self.scenario.pollingInterval
 
             yield hold, self, self.scenario.sch_interval
        
