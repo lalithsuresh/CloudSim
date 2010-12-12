@@ -1,5 +1,6 @@
 # Python modules
 import sys
+import math
 
 # Simpy modules
 from SimPy.Simulation import *
@@ -118,9 +119,10 @@ def print_initial_data(scenario):
 
 def print_result(scenario):
  
-    jobsRT = scenario.scheduler.jobsRT
-    tasksRT = scenario.scheduler.tasksRT
+#jobsRT = scenario.scheduler.jobsRT
+#tasksRT = scenario.scheduler.tasksRT
 
+    '''
     # Calculate job response time average
     # and standard deviation
     avgJobRT = 0
@@ -141,6 +143,7 @@ def print_result(scenario):
         for rt in scenario.scheduler.tasksRT:
             summation += (avgTaskRT - rt)**2
         taskRTStdDev = math.sqrt(summation/len(tasksRT)-1)
+    '''
 
     allMachines = scenario.scheduler.activeMachines+scenario.scheduler.destroyedMachines
 
@@ -156,16 +159,19 @@ def print_result(scenario):
         cpuTime += machine.getCPUTime()
         totalCost += machine.getExecutionCost()
 
+    jobRTs = scenario.monitors["jobRT"]
+    taskRTs = scenario.monitors["taskRT"]
+
     scenario.printSep()
     print "- Simulation results:"
     print "%s\t:\t %ss" % ("Total execution time", str(totalTime))
     print "%s\t:\t %ss" % ("Total CPU time used",str(cpuTime))
     print "%s\t:\t %ss" % ("Total unused paid time",str(wastedTime))
     print "%s\t:\t $%s" % ("Total cost",str(totalCost))
-    print "%s\t:\t %ss" % ("Average job response time", str(avgJobRT))
-    print "%s\t:\t %s" % ("Job response time std deviation", str(jobRTStdDev))
-    print "%s\t:\t %ss" % ("Average task response time", str(avgTaskRT))
-    print "%s\t:\t %s" % ("Task response time std deviation", str(taskRTStdDev))
+    print "%s\t:\t %ss" % ("Average job response time", str(jobRTs.mean()))
+    print "%s\t:\t %s" % ("Job response time std deviation", str(math.sqrt(jobRTs.var())))
+    print "%s\t:\t %ss" % ("Average task response time", str(taskRTs.mean()))
+    print "%s\t:\t %s" % ("Task response time std deviation", str(math.sqrt(taskRTs.var())))
 
 def main():
     scenario = parse_args()

@@ -1,6 +1,7 @@
 from SimPy.Simulation import *
 from AbstractResource import *
 from CloudMachine import *
+import math
 
 class Scheduler(Process):
     def __init__(self, scenario, name="Scheduler"):
@@ -20,14 +21,17 @@ class Scheduler(Process):
         self.taskInfos = {}
         self.taskJobs = {}
 
-        self.tasksRT = []
-        self.jobsRT = []
-
-        temp = scenario.addMonitor ("activeNodesMon")
-        scenario.addMonitorPlot ("Running nodes", temp)
+        #self.tasksRT = []
+        #self.jobsRT = []
 
         temp = scenario.addMonitor ("activeJobsMon")
         scenario.addMonitorPlot ("Running Jobs", temp)
+
+        scenario.addMonitor("jobRT")
+        scenario.addMonitor("taskRT")
+
+        temp = scenario.addMonitor ("activeNodesMon")
+        scenario.addMonitorPlot ("Running nodes", temp)
 
         temp = scenario.addMonitor("jobRTAvgMon")
         scenario.addMonitorPlot ("Average job response time", temp)
@@ -92,22 +96,19 @@ class Scheduler(Process):
         
         # Calculate job service time
         jobRT = finishTime - job.startTime
-        self.jobsRT.append(jobRT)
-
+        self.scenario.monitors ["jobRT"].observe (jobRT)
 
         # Complete job in task info and check if
         # task is completed
         taskInfo = self.taskInfos[job.taskId]
         taskInfo[1] -= 1
        
-#print "Remaining jobs from task %d: %d" %(job.taskId, taskInfo[1])
-
         # No jobs remaining - Task finished!
         if(taskInfo[1] == 0):
             print "Task %d is finished" %(job.taskId)
-            # Calculate task service time
+            # Calculate task response time
             taskRT = finishTime - taskInfo[0] #initialTime
-            self.tasksRT.append(taskRT)
+            self.scenario.monitors ["taskRT"].observe (taskRT)
         
         allFinished = True
         for info in self.taskInfos.values():
@@ -159,10 +160,8 @@ class Scheduler(Process):
                 self.scenario.monitors ["activeJobsMon"].observe (sum(map(lambda x: len(x), self.taskJobs.values())))
                 self.scenario.monitors ["activeNodesMon"].observe (len(self.activeMachines))
 
-                if(len(self.jobsRT) > 0):
-                    self.scenario.monitors ["jobRTAvgMon"].observe (sum(self.jobsRT)/len(self.jobsRT))
-                if(len(self.tasksRT) > 0):
-                    self.scenario.monitors ["taskRTAvgMon"].observe (sum(self.tasksRT)/len(self.tasksRT))
+                self.scenario.monitors ["jobRTAvgMon"].observe (self.getAvgJobRT())
+                self.scenario.monitors ["taskRTAvgMon"].observe (self.getAvgTaskRT())
 
                 currentCost = 0.0
                 for machine in self.activeMachines+self.destroyedMachines:
@@ -173,6 +172,40 @@ class Scheduler(Process):
 
             yield hold, self, self.scenario.sch_interval
        
+    def getAvgJobRT(self):
+
+        windowStart = max(now()-self.scenario.averageWindow, 0)
+
+        jobRTs = self.scenario.monitors["jobRT"]
+        avgJobRT = 0
+        count = 0
+        for jobRT in jobRTs:
+            if(jobRT[0] >= windowStart):
+                avgJobRT += jobRT[1]
+                count += 1
+
+        if(count > 0):
+            avgJobRT = avgJobRT / count
+      
+        return avgJobRT
+
+    def getAvgTaskRT(self):
+
+        windowStart = max(now()-self.scenario.averageWindow, 0)
+
+        taskRTs = self.scenario.monitors["taskRT"]
+        avgTaskRT = 0
+        count = 0
+        for taskRT in taskRTs:
+            if(taskRT[0] >= windowStart):
+                avgTaskRT += taskRT[1]
+                coTaskRT= 1
+
+        if(count > 0):
+            avgTaskRT = avgTaskRT / count
+      
+        return avgTaskRT
+
     def guessEstimatedTime(self, taskId):
         remainingJobs = self.taskInfos[taskId][1]
 
