@@ -209,7 +209,7 @@ class Scheduler(Process):
     def guessEstimatedTime(self, taskId):
         remainingJobs = self.taskInfos[taskId][1]
 
-        remainingJobs -= len(self.jobList[taskId])
+        remainingJobs -= len(self.taskJobs[taskId])
 
         return remainingJobs    
 
