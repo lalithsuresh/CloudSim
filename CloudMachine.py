@@ -4,17 +4,17 @@ from time import *
 import math
 
 class CloudMachine(Process):
-    def __init__(self, mId, scenario, start=0):
+    def __init__(self, mId, scenario, started=False):
         Process.__init__(self, name="M-"+str(mId))
         self.id = mId
         self.jobs = []
-        self.started = start
+        self.started = started
         self.startTime = 0
         self.stopTime = 0
         self.memory = {}
         self.availMem = scenario.wn_mem
         self.scenario = scenario
-        self.wasted = 0
+        self.wasted = scenario.wn_startup
         self.debug = False
 
     def addJob (self, job):
@@ -39,17 +39,17 @@ class CloudMachine(Process):
         return timeInHours * self.scenario.wn_cost
 
     def getWastedTime(self):
-        return self.wasted + self.getExecutionTime()%60
+        return self.wasted + self.getExecutionTime()%3600
 
     def getCPUTime(self):
         return self.getExecutionTime() - self.wasted
 
     def start(self):
-        if(self.started == 0):
+        if(not self.started):
           self.log("Starting machine.")
           # Holds for startup time
           yield hold,self,self.scenario.wn_startup
-          self.started = 1
+          self.started = True
           self.startTime = now()
        
         index = -1

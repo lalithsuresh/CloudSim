@@ -122,7 +122,7 @@ class Scheduler(Process):
 
         # Create initial machines
         for m_id in range(self.scenario.initial_machines):
-           self.createMachine(1)
+           self.createMachine(True)
 
         self.started = True
 
@@ -220,7 +220,7 @@ class Scheduler(Process):
         self.activeMachines.remove(machine)
         self.destroyedMachines.append(machine)
 
-    def createMachine(self, started=0):
+    def createMachine(self, started=False):
         machine = CloudMachine(self.genId, self.scenario, started)
         self.activeMachines.append(machine)
         self.genId += 1
