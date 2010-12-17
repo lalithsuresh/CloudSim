@@ -42,7 +42,7 @@ def longest_processing_time_first (workerList, tasks, scheduler):
             scheduler.taskMeanTimes [job.taskId][0]
         except:
             if(len(workerList) < len(tasks)):
-              for i in range(len(tasks)-len(workerList)):
+              for i in range((len(tasks)-len(workerList))):
                   scheduler.createMachine()
 
             if (job.taskId not in idsSubmitted):
@@ -82,12 +82,11 @@ def longest_processing_time_first (workerList, tasks, scheduler):
     for each in idsSubmitted:
         ES += scheduler.guessEstimatedTime(each) * scheduler.taskMeanTimes[each][0]
 
-#print ES%3600
     ESList.append (ES)
-    flag = 0
-    for each in sums:
-        if (each[0] < max(ESList)/10):
-          flag = 1
+#    flag = 0
+#    for each in sums:
+#        if (each[0] < max(ESList)/10):
+#          flag = 1
 
     sums.sort ()
     allocations = []
@@ -95,15 +94,31 @@ def longest_processing_time_first (workerList, tasks, scheduler):
     #if (flag == 0):
     #  machine = scheduler.createMachine ()
     
-    if (ES > 1000 and (ES % 3600 <= 200)):
-        scheduler.createMachine ()
+    #if (ES > 1000 and (ES % 3600 <= 200)):
+        #machine = scheduler.createMachine ()
+
+    neededWorkers = 0
+    Nlist = []
+    for N in range (100):
+        #print ((ES)/(len(workerList) + N)) % 3600= 3600, scheduler.scenario.acceptableWaste/100 + scheduler.scenario.wn_startup
+        if (((ES)/(len(workerList) + N)) % 3600 >= 3600/scheduler.scenario.acceptableWaste * 20 - scheduler.scenario.wn_startup):
+            Nlist.append (N)
+
+    newMachinesList = []
+
+    if (Nlist != []):
+        for x in range(max(Nlist)):
+           newMachinesList.append (scheduler.createMachine())
 
     count = 0
     for each in orphanjobs:
          sums[0][0] += scheduler.taskMeanTimes[each.taskId][0]
          count += 1
-         if (flag == 0):
-            sums[0][1] = None
+ #        if (flag == 0):
+            #print ES % (3600 - scheduler.scenario.wn_startup), 3600 * scheduler.scenario.acceptableWaste/100 
+         if (ES > 1000 and newMachinesList != []):
+              newMachinesList = [newMachinesList.pop()] + newMachinesList
+              sums[0][1] = newMachinesList[0]
          allocations.append ([sums[0][1], each])
          sums.sort ()
 
