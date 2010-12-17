@@ -10,6 +10,8 @@ class Scheduler(Process):
 
         self.started = False
 
+        self.completedJobs = 0;
+
         self.genId = 0
         self.activeMachines = []
         self.destroyedMachines = []
@@ -50,6 +52,8 @@ class Scheduler(Process):
 
         self.nextPoll = 0
 
+        self.lastAvgJobRT = 0
+        self.lastAvgTaskRT = 0
 
     def addJob(self, job):
         job.startTime = now()
@@ -75,6 +79,8 @@ class Scheduler(Process):
 
     def jobFinished(self, job, machineId):
         finishTime = now()
+    
+        self.completedJobs += 1
 
         self.jobTimes[(job.taskId, job.jobId)] += finishTime
 
@@ -163,10 +169,12 @@ class Scheduler(Process):
                 self.scenario.monitors ["jobRTAvgMon"].observe (self.getAvgJobRT())
                 self.scenario.monitors ["taskRTAvgMon"].observe (self.getAvgTaskRT())
 
-                currentCost = 0.0
-                for machine in self.activeMachines+self.destroyedMachines:
+                currentCost = 0
+
+                allMachines = self.activeMachines+self.destroyedMachines
+                for machine in allMachines:
                     currentCost += machine.getExecutionCost()
-                self.scenario.monitors ["executionCostMon"].observe (currentCost)
+                self.scenario.monitors ["executionCostMon"].observe (int(currentCost))
 
                 self.nextPoll += self.scenario.pollingInterval
 
@@ -186,6 +194,10 @@ class Scheduler(Process):
 
         if(count > 0):
             avgJobRT = avgJobRT / count
+        else:
+            avgJobRT = self.lastAvgJobRT
+
+        self.lastAvgJobRT = avgJobRT
       
         return avgJobRT
 
@@ -203,7 +215,11 @@ class Scheduler(Process):
 
         if(count > 0):
             avgTaskRT = avgTaskRT / count
+        else:
+            avgTaskRT = self.lastAvgTaskRT
       
+        self.lastAvgTaskRT = avgTaskRT
+
         return avgTaskRT
 
     def guessEstimatedTime(self, taskId):

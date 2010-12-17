@@ -14,7 +14,7 @@ class CloudMachine(Process):
         self.memory = {}
         self.availMem = scenario.wn_mem
         self.scenario = scenario
-        self.wasted = scenario.wn_startup
+        self.wasted = 0
         self.debug = False
 
     def addJob (self, job):
@@ -33,24 +33,31 @@ class CloudMachine(Process):
         else:
             return self.stopTime - self.startTime
 
+    def getPaidTime(self):
+        cpuTime = int(self.getExecutionTime())
+        return cpuTime + 3600 - (cpuTime%3600)
+
     def getExecutionCost(self):
-        timeInSecs = self.getExecutionTime()
-        timeInHours = math.ceil(timeInSecs/3600.0)
-        return timeInHours * self.scenario.wn_cost
+        paidTimeInHours = self.getPaidTime()/3600
+        return paidTimeInHours * self.scenario.wn_cost
+
+    def getWastedSwapAndStartup(self):
+        return self.wasted;
+
+    def getWastedPartialHours(self):
+        return 3600 - (self.getExecutionTime()%3600)
 
     def getWastedTime(self):
-        return self.wasted + self.getExecutionTime()%3600
-
-    def getCPUTime(self):
-        return self.getExecutionTime() - self.wasted
+        return self.getWastedSwapAndStartup() + self.getWastedPartialHours()
 
     def start(self):
         if(not self.started):
           self.log("Starting machine.")
+          self.startTime = now()
+          self.wasted += self.scenario.wn_startup
           # Holds for startup time
           yield hold,self,self.scenario.wn_startup
           self.started = True
-          self.startTime = now()
        
         index = -1
 
@@ -96,10 +103,11 @@ class CloudMachine(Process):
                 yield hold,self,self.scenario.wn_quantum
 
     def stop(self):
-        self.finished = 1
+        self.started = False
         self.stopTime = now()
         for job in self.jobs:
             job.workerId = None
+        return self.jobs
 
 
     def finishJob(self, job):

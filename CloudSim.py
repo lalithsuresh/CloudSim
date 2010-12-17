@@ -20,6 +20,8 @@ currentMachine = 0
 
 inputFile = ''
 
+totalJobs = 0
+
 arguments = [
              ('--input', 'input file', 'input file path',  ),
              ('--conf', 'simulation conf file', 'config file path', )
@@ -77,7 +79,7 @@ def run(scenario, verbose=True):
     scenario.printSep()
     print "- Running Simulation"
     simulate(until=scenario.sim_time)
-    print "- Simulation complete at %d" %(now())
+    print "- Simulation complete"
 
     scenario.finish_objects()
 
@@ -89,11 +91,11 @@ def run(scenario, verbose=True):
 
 def init_task_generators(scenario):
     global inputFile
+    global totalJobs
     inputFile = open (inputFile, 'r')
     # Remove trailing endline characters
     temp = map (lambda x : x.strip (), inputFile.readlines ())
     params = []
-    totalJobs = 0
     for each in temp:
         y = each.split()
         # Remove commas from each input element except the last
@@ -112,66 +114,53 @@ def init_task_generators(scenario):
 def print_initial_data(scenario):
     scenario.printSep()
     print "- Initial data:"
+    print "%s\t:\t %s" % ("Execution mode",str(scenario.mode))
     print "%s\t:\t %s" % ("Random seed",str(scenario.seed))
     print "%s\t:\t %s" % ("Scheduling algorithm",str(scenario.algoName))
+    print "%s\t:\t %d%%" % ("Acceptable waste",scenario.acceptableWaste)
     print "%s\t:\t %s" % ("Started workers", str(scenario.initial_machines))
     print "%s\t:\t %s" % ("Simulation time", str(scenario.sim_time))
 
 def print_result(scenario):
  
-#jobsRT = scenario.scheduler.jobsRT
-#tasksRT = scenario.scheduler.tasksRT
-
-    '''
-    # Calculate job response time average
-    # and standard deviation
-    avgJobRT = 0
-    jobRTStdDev = 0
-    if(len(jobsRT) > 0):
-        avgJobRT = sum(jobsRT)/len(jobsRT)
-        summation = 0
-        for rt in jobsRT:
-            summation += (avgJobRT - rt)**2
-        jobRTStdDev = math.sqrt(summation/len(jobsRT)-1)
-
-    # Calculate job response time average
-    # and standard deviation
-    avgTaskRT = 0
-    taskRTStdDev = 0
-    if(len(tasksRT) > 0):
-        avgTaskRT = sum(tasksRT)/len(tasksRT)
-        for rt in scenario.scheduler.tasksRT:
-            summation += (avgTaskRT - rt)**2
-        taskRTStdDev = math.sqrt(summation/len(tasksRT)-1)
-    '''
-
     allMachines = scenario.scheduler.activeMachines+scenario.scheduler.destroyedMachines
 
     # Calculate total execution time,
     # wasted time, CPU time and total cost
-    totalTime = 0
-    wastedTime = 0
     cpuTime = 0
+    wastedTime = 0
+    wastedSwStartup = 0
+    wastedPart = 0
     totalCost = 0
+    paidTime = 0
     for machine in allMachines:
-        totalTime += machine.getExecutionTime()
+        cpuTime += machine.getExecutionTime()
+        paidTime += machine.getPaidTime()
         wastedTime += machine.getWastedTime()
-        cpuTime += machine.getCPUTime()
+        wastedSwStartup += machine.getWastedSwapAndStartup()
+        wastedPart += machine.getWastedPartialHours()
         totalCost += machine.getExecutionCost()
 
     jobRTs = scenario.monitors["jobRT"]
     taskRTs = scenario.monitors["taskRT"]
 
+    completedJobs = scenario.scheduler.completedJobs
+
     scenario.printSep()
     print "- Simulation results:"
-    print "%s\t:\t %ss" % ("Total execution time", str(totalTime))
-    print "%s\t:\t %ss" % ("Total CPU time used",str(cpuTime))
-    print "%s\t:\t %ss" % ("Total unused paid time",str(wastedTime))
-    print "%s\t:\t $%s" % ("Total cost",str(totalCost))
-    print "%s\t:\t %ss" % ("Average job response time", str(jobRTs.mean()))
-    print "%s\t:\t %s" % ("Job response time std deviation", str(math.sqrt(jobRTs.var())))
-    print "%s\t:\t %ss" % ("Average task response time", str(taskRTs.mean()))
-    print "%s\t:\t %s" % ("Task response time std deviation", str(math.sqrt(taskRTs.var())))
+    print "%s\t:\t %d (%.2f%%)" % ("Completed jobs", completedJobs, (completedJobs/totalJobs)*100)
+    print "%s\t:\t %.2fs" % ("Total execution time", now())
+    print "%s\t:\t %.2fs" % ("Total CPU time used",cpuTime)
+    print "%s\t:\t %.2fs" % ("Total CPU time paid", paidTime)
+    print "%s\t:\t %.2fs" % ("Total unused paid time",wastedTime)
+    print "-- %s\t:\t %.2fs (%.2f%%)" % ("Swap and startup:",wastedSwStartup, (wastedSwStartup/wastedTime)*100)
+    print "-- %s\t:\t %.2fs (%.2f%%)" % ("Unused partial hour:",wastedPart, (wastedPart/wastedTime)*100)
+    print "%s\t:\t %.2f%%" % ("Percentage of waste", (wastedTime/paidTime)*100)
+    print "%s\t:\t $%.2f" % ("Total cost", totalCost)
+    print "%s\t:\t %.2fs" % ("Average job response time", jobRTs.mean())
+    print "%s\t:\t %.2fs" % ("Job response time std deviation", math.sqrt(jobRTs.var()))
+    #print "%s\t:\t %ss" % ("Average task response time", str(taskRTs.mean()))
+    #print "%s\t:\t %s" % ("Task response time std deviation", str(math.sqrt(taskRTs.var())))
 
 def main():
     scenario = parse_args()
