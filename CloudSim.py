@@ -123,7 +123,7 @@ def print_initial_data(scenario):
 
 def print_result(scenario):
  
-    allMachines = scenario.scheduler.activeMachines+scenario.scheduler.destroyedMachines
+    allMachines = scenario.scheduler.activeMachines.values()+scenario.scheduler.destroyedMachines
 
     # Calculate total execution time,
     # wasted time, CPU time and total cost
@@ -148,12 +148,12 @@ def print_result(scenario):
 
     scenario.printSep()
     print "- Simulation results:"
-    print "%s\t:\t %d (%.2f%%)" % ("Completed jobs", completedJobs, (completedJobs/totalJobs)*100)
+    print "%s\t:\t %d (%.2f%%)" % ("Completed jobs", completedJobs, (float(completedJobs)/totalJobs)*100)
     print "%s\t:\t %.2fs" % ("Total execution time", now())
     print "%s\t:\t %.2fs" % ("Total CPU time used",cpuTime)
     print "%s\t:\t %.2fs" % ("Total CPU time paid", paidTime)
     print "%s\t:\t %.2fs" % ("Total unused paid time",wastedTime)
-    print "-- %s\t:\t %.2fs (%.2f%%)" % ("Swap and startup:",wastedSwStartup, (wastedSwStartup/wastedTime)*100)
+    print "-- %s\t:\t %.2fs (%.2f%%)" % ("Swap, idle and startup:",wastedSwStartup, (wastedSwStartup/wastedTime)*100)
     print "-- %s\t:\t %.2fs (%.2f%%)" % ("Unused partial hour:",wastedPart, (wastedPart/wastedTime)*100)
     print "%s\t:\t %.2f%%" % ("Percentage of waste", (wastedTime/paidTime)*100)
     print "%s\t:\t $%.2f" % ("Total cost", totalCost)
