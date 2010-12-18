@@ -288,6 +288,11 @@ class Scheduler(Process):
         self.destroyedMachines.append(machine)
 
     def createMachine(self, started=False, shutdown=3550):
+
+        # this is a hack -- lalith
+        if (shutdown == 3550):
+            shutdown = self.scenario.sim_time
+
         shutdown += int(now())
 
         print "[%d] Creating machine %d. Shutdown time: %d" % (now(), self.genId, shutdown)

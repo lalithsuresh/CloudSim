@@ -25,6 +25,109 @@ def round_robin(workerList, tasks, scheduler):
 
     return allocations 
 
+def return_next (s, listofworkers):
+
+    start = s
+    while (start == listofworkers[0]):
+      listofworkers = [listofworkers.pop()] + listofworkers
+
+    return listofworkers
+
+submittedList = []
+lastMachineP = None
+def irr(workerList, tasks, scheduler):
+    global currentMachine
+    global lastMachineP
+
+    flag = 0
+    weights = []
+    i = 0
+    for each in scheduler.avgRtPerWorker.values():
+        weights.append (each[0] - scheduler.avgRT[0])
+        if (each[0] < 200):
+            flag = 1
+        i += 1
+
+    usingWeights = 0
+    if (len(weights) == len(workerList)):
+       usingWeights = 1
+       minWeight = min (weights)
+       if (minWeight < 0):
+            minWeight = -minWeight
+       if (minWeight == 0.0):
+          minWeight = 1.0
+       normalisedList =  map(lambda x : x + 2*minWeight, weights) # add 1 so that all weights are non-zero
+       minWeight = min(normalisedList)
+       normalisedList =  map (lambda x : x/minWeight, normalisedList)
+       s = sum (normalisedList)
+       normalisedList = map (lambda x : s/x, normalisedList)
+
+    x = normalisedList[0]
+    allSame = 1
+    for each in normalisedList[1:]:
+        if (x != each):
+          allSame = 0
+          break
+
+    if (allSame == 1):
+        normalisedList = map (lambda x : 1.0, normalisedList)
+
+    orphanJobs = get_non_allocated_jobs(tasks)
+    allocations = []
+
+    if (orphanJobs == 0):
+        return []
+
+    newList = workerList [0:]
+
+    if (usingWeights == 1):
+        zz = []
+        i = 0
+        for each in newList:
+            zz = [each] * int(normalisedList[i]) + zz
+            i += 1
+        newList = zz
+
+    if (flag == 0):
+        newList = [scheduler.createMachine(), scheduler.createMachine()] * (int(sum(normalisedList)/2)) + newList
+
+    last = None
+
+    reqLen = 0
+
+    for each in scheduler.avgRtPerWorker.values():
+      if (each[0] > 0.0):
+        reqLen += 1
+        
+    l = newList[0:]
+    x = []
+    last = l[0]
+    while (l != []):
+      if(last.id == l[-1].id):
+          l = [l.pop()] + l
+      else:
+          last = l.pop()
+          x.append (last)
+
+      if (map(lambda x:x.id,l) == [l[0].id] * len(l)):
+          x = x + l
+          break
+
+    newList = x
+
+    for job in orphanJobs:
+      newList = [newList.pop()] + newList
+      machine = newList[0]
+
+      if (machine.id not in submittedList):
+        allocations.append([machine, job])
+        submittedList.append (machine.id)
+      elif (reqLen == len(scheduler.avgRtPerWorker)):
+        allocations.append([machine, job])
+
+    return allocations 
+
+
 idsSubmitted = []
 done = 0
 ESList = []
