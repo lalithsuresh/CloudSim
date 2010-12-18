@@ -4,18 +4,29 @@ from time import *
 import math
 
 class CloudMachine(Process):
-    def __init__(self, mId, scenario, started=False):
+    def __init__(self, mId, scenario, shutdownTime, started=False):
         Process.__init__(self, name="M-"+str(mId))
         self.id = mId
         self.jobs = []
         self.started = started
         self.startTime = 0
         self.stopTime = 0
+        self.shutdownTime = shutdownTime
         self.memory = {}
         self.availMem = scenario.wn_mem
         self.scenario = scenario
         self.wasted = 0
         self.debug = False
+
+    def getPossibleJobs(self, avgJobTime):
+        leftTime = self.shutdownTime - int(now())
+        return int(round(leftTime/avgJobTime))
+
+    def getShutdownTime(self):
+        return self.shutdownTime
+
+    def getNumJobs(self):
+        return len(self.jobs)
 
     def addJob (self, job):
         job.workerId = self.id
@@ -55,9 +66,9 @@ class CloudMachine(Process):
           self.log("Starting machine.")
           self.startTime = now()
           self.wasted += self.scenario.wn_startup
+          self.started = True
           # Holds for startup time
           yield hold,self,self.scenario.wn_startup
-          self.started = True
        
         index = -1
 
@@ -102,6 +113,8 @@ class CloudMachine(Process):
                 self.wasted += self.scenario.wn_quantum
                 yield hold,self,self.scenario.wn_quantum
 
+        print "[%.2f] Machine %d left loop" % (now(), self.id)
+
     def stop(self):
         self.started = False
         self.stopTime = now()
@@ -109,6 +122,8 @@ class CloudMachine(Process):
             job.workerId = None
         return self.jobs
 
+    def isFinished(self):
+        return not self.started
 
     def finishJob(self, job):
         self.log("Finishing job " + str(job.jobId))
