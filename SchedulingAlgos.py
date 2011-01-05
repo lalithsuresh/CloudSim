@@ -39,12 +39,18 @@ def irr(workerList, tasks, scheduler):
     global currentMachine
     global lastMachineP
 
+    orphanJobs = get_non_allocated_jobs(tasks)
+    allocations = []
+
+    if (orphanJobs == 0):
+        return []
+
     flag = 0
     weights = []
     i = 0
     for each in scheduler.avgRtPerWorker.values():
         weights.append (each[0] - scheduler.avgRT[0])
-        if (each[0] < 200):
+        if (each[0] < 100):
             flag = 1
         i += 1
 
@@ -72,12 +78,6 @@ def irr(workerList, tasks, scheduler):
     if (allSame == 1):
         normalisedList = map (lambda x : 1.0, normalisedList)
 
-    orphanJobs = get_non_allocated_jobs(tasks)
-    allocations = []
-
-    if (orphanJobs == 0):
-        return []
-
     newList = workerList [0:]
 
     if (usingWeights == 1):
@@ -89,7 +89,7 @@ def irr(workerList, tasks, scheduler):
         newList = zz
 
     if (flag == 0):
-        newList = [scheduler.createMachine(), scheduler.createMachine()] * (int(sum(normalisedList)/2)) + newList
+        newList = newList + [scheduler.createMachine(), scheduler.createMachine()] * (int(sum(normalisedList)/2))
 
     last = None
 
@@ -102,6 +102,7 @@ def irr(workerList, tasks, scheduler):
     l = newList[0:]
     x = []
     last = l[0]
+    
     while (l != []):
       if(last.id == l[-1].id):
           l = [l.pop()] + l
@@ -109,16 +110,20 @@ def irr(workerList, tasks, scheduler):
           last = l.pop()
           x.append (last)
 
-      if (map(lambda x:x.id,l) == [l[0].id] * len(l)):
-          x = x + l
+      allSame = 1
+      for each in l[1:]:
+        if (each.id == l[0].id):
+            allSame = 0
+
+      if (allSame == 1):
+          newList = newList + l
           break
-
+    
     newList = x
-
+    
     for job in orphanJobs:
       newList = [newList.pop()] + newList
       machine = newList[0]
-
       if (machine.id not in submittedList):
         allocations.append([machine, job])
         submittedList.append (machine.id)
